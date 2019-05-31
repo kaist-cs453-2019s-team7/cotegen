@@ -3,16 +3,12 @@ import ast
 import copy
 
 
-def omit_function_call():
-    pass
-
-
-def get_mutated_operator(cur_node):
+def mutate_predicate(predicate):
     new_op = None
-    new_test = copy.deepcopy(cur_node.test)
+    new_test = copy.deepcopy(predicate)
 
-    if isinstance(cur_node.test, ast.Compare):
-        op = cur_node.test.ops[0]
+    if isinstance(predicate, ast.Compare):
+        op = predicate.ops[0]
 
         if isinstance(op, ast.Gt):
             new_op = ast.GtE()
@@ -30,8 +26,8 @@ def get_mutated_operator(cur_node):
         if new_op:
             new_test.ops[0] = new_op
 
-    elif isinstance(cur_node.test, ast.BoolOp):
-        op = cur_node.test.op
+    elif isinstance(predicate, ast.BoolOp):
+        op = predicate.op
 
         if isinstance(op, ast.And):
             new_op = ast.Or()
@@ -48,11 +44,11 @@ def get_mutated_operator(cur_node):
 class Mutator(astor.TreeWalk):
     def __init__(self, target_function_AST):
         astor.TreeWalk.__init__(self)
-        self.mutation_candidates = []
-        self.target_function = target_function_AST
+        self.mutations = []
+        self.target = target_function_AST
 
-    def walk(self):
-        astor.TreeWalk.walk(self, self.target_function)
+    def apply_mutations(self):
+        astor.TreeWalk.walk(self, self.target)
 
     def pre_FunctionDef(self):
         pass
@@ -60,14 +56,14 @@ class Mutator(astor.TreeWalk):
     def _pre_Conditional_statement(self):
         original_test = copy.deepcopy(self.cur_node.test)
 
-        mutated_test = get_mutated_operator(self.cur_node)
+        mutated_test = mutate_predicate(self.cur_node.test)
         if mutated_test:
             self.cur_node.test = mutated_test
 
-            mutated_function = copy.deepcopy(self.target_function)
+            mutation = copy.deepcopy(self.target)
             self.cur_node.test = original_test
 
-            self.mutation_candidates.append(mutated_function)
+            self.mutations.append(mutation)
 
     def pre_If(self):
         self._pre_Conditional_statement()
@@ -76,5 +72,5 @@ class Mutator(astor.TreeWalk):
         self._pre_Conditional_statement()
 
     def get_mutation(self):
-        mutated_function = self.mutation_candidates.pop()
-        return mutated_function
+        mutation = self.mutations.pop()
+        return mutation
