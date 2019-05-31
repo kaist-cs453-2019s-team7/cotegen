@@ -1,76 +1,83 @@
-import astor
-import ast
 import copy
 
-
-def mutate_predicate(predicate):
-    new_op = None
-    new_test = copy.deepcopy(predicate)
-
-    if isinstance(predicate, ast.Compare):
-        op = predicate.ops[0]
-
-        if isinstance(op, ast.Gt):
-            new_op = ast.GtE()
-        elif isinstance(op, ast.GtE):
-            new_op = ast.Gt()
-        elif isinstance(op, ast.Lt):
-            new_op = ast.LtE()
-        elif isinstance(op, ast.LtE):
-            new_op = ast.Lt()
-        elif isinstance(op, ast.Eq):
-            new_op = ast.NotEq()
-        elif isinstance(op, ast.NotEq):
-            new_op = ast.Eq()
-
-        if new_op:
-            new_test.ops[0] = new_op
-
-    elif isinstance(predicate, ast.BoolOp):
-        op = predicate.op
-
-        if isinstance(op, ast.And):
-            new_op = ast.Or()
-        elif isinstance(op, ast.Or):
-            new_op = ast.And()
-
-        if new_op:
-            new_test.op = new_op
-
-    if new_op:
-        return new_test
+from cotegen.mutation_ops import compare_mutation, and_or_mutation, operator_mutation, keyword_mutation
+from cotegen.ast_utils import TreeWalk, to_source, to_ast_node, print_ast
 
 
-class Mutator(astor.TreeWalk):
+def mutate_compare(compare):
+    mutants = []
+
+    for index, op in enumerate(compare.ops):
+        for key, new_op in compare_mutation.items():
+            if to_source(op) == key:
+                mutant = copy.deepcopy(compare)
+                mutant.ops[index] = to_ast_node(new_op)
+
+                mutants.append(mutant)
+
+    return mutants
+
+
+def mutate_and_or(boolop):
+    mutants = []
+
+    op = boolop.op
+
+    for key, new_op in and_or_mutation.items():
+            if to_source(op) == key:
+                mutant = copy.deepcopy(boolop)
+                mutant.op = to_ast_node(new_op)
+
+                mutants.append(mutant)
+
+    return mutants
+
+
+class Mutator(TreeWalk):
     def __init__(self, target_function_AST):
-        astor.TreeWalk.__init__(self)
+        TreeWalk.__init__(self)
         self.mutations = []
         self.target = target_function_AST
 
     def apply_mutations(self):
-        astor.TreeWalk.walk(self, self.target)
+        TreeWalk.walk(self, self.target)
+
+    def pre_Compare(self):
+        original = self.cur_node
+        mutants = mutate_compare(original)
+        for mutant in mutants:
+            self.replace(mutant)
+            mutation = copy.deepcopy(self.target)
+            self.mutations.append(mutation)
+
+            self.replace(original)
+
+    def pre_BoolOp(self):
+        original = self.cur_node
+        mutants = mutate_and_or(original)
+        for mutant in mutants:
+            self.replace(mutant)
+            mutation = copy.deepcopy(self.target)
+            self.mutations.append(mutation)
+
+            self.replace(original)
+
+    def pre_If(self):
+        pass
+
+    def pre_While(self):
+        pass
 
     def pre_FunctionDef(self):
         pass
 
-    def _pre_Conditional_statement(self):
-        original_test = copy.deepcopy(self.cur_node.test)
+    # TODO: mutation ID
+    def get_mutation(self, id=None):
+        if len(self.mutations) > 0:
+            mutation = self.mutations.pop()
+            return mutation
 
-        mutated_test = mutate_predicate(self.cur_node.test)
-        if mutated_test:
-            self.cur_node.test = mutated_test
-
-            mutation = copy.deepcopy(self.target)
-            self.cur_node.test = original_test
-
-            self.mutations.append(mutation)
-
-    def pre_If(self):
-        self._pre_Conditional_statement()
-
-    def pre_While(self):
-        self._pre_Conditional_statement()
-
-    def get_mutation(self):
-        mutation = self.mutations.pop()
-        return mutation
+    def print_mutations(self):
+        # should print all mutated functions
+        for mutation in self.mutations:
+            print_ast(mutation)
