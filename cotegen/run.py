@@ -1,9 +1,13 @@
 import astor
 import ast
+
 from cotegen.mutate import Mutator
+from cotegen.task import Task
+
+import cotegen
 
 
-def get_function(node, name):
+def _get_function(node, name):
     if isinstance(node, ast.FunctionDef) and node.name == name:
         return node
 
@@ -14,13 +18,48 @@ def get_function(node, name):
             body = attr[0]
 
             for child in body:
-                target = get_function(child, name)
+                target = _get_function(child, name)
+                if target:
+                    return target
+
+
+def _get_assign(node, name):
+    if isinstance(node, ast.Assign) and node.targets[0].id == name:
+        return node
+
+    node = astor.iter_node(node)
+
+    for attr in node:
+        if attr[1] == 'body':
+            body = attr[0]
+
+            for child in body:
+                target = _get_assign(child, name)
                 if target:
                     return target
 
 
 def get_solve_function(target_file):
-    return get_function(target_file, 'solve')
+    return _get_function(target_file, 'solve')
+
+
+def get_compare_function(target_file):
+    return _get_function(target_file, 'compare')
+
+
+def get_input_parameters(target_file):
+    assign_stmt = _get_assign(target_file, 'input_parameters')
+    dict_ast = assign_stmt.value
+
+    def convert(ast_call):
+        expr = ast.Expression(ast_call)
+        return eval(compile(expr, '', 'eval'))
+
+    input_parameters = dict(
+        zip(map(lambda key: key.s, dict_ast.keys),
+            map(convert, dict_ast.values)))
+
+    return input_parameters
 
 
 if __name__ == "__main__":
@@ -31,8 +70,10 @@ if __name__ == "__main__":
     mutator = Mutator(target_function)
     mutator.apply_mutations()
 
-    # should print mutated function
-    print(astor.to_source(mutator.get_mutation()))
+    mutator.print_mutations()
 
-    # should print original function
-    print(astor.to_source(target_function))
+    # TODO: execute each mutation with sample input
+    Task.input_parameters = get_input_parameters(target_file)
+
+    inputs = Task.generate_tests()
+    print(inputs)
