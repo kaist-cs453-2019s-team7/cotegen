@@ -2,6 +2,8 @@ import astor
 import ast
 
 from .tree_walk import TreeWalk
+from .find_node import find_assign, find_function
+
 # TODO: handle both directions with one predifined dictionary
 # Now it's quite stupid
 
