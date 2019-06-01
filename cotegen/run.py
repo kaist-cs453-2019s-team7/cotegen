@@ -62,6 +62,21 @@ def get_input_parameters(target_file):
     return input_parameters
 
 
+def make_function_call(function_name, args):
+    call_str = '{func}('.format(func=function_name)
+
+    for id, value in args.items():
+        call_str += '{id}={value},'.format(id=id, value=value)
+
+    call_str = call_str[:-1] + ')'
+
+    return call_str
+
+
+def to_source(function_def):
+    return compile(ast.Module(body=[function_def]), '', 'exec')
+
+
 if __name__ == "__main__":
     target_file = astor.code_to_ast.parse_file(
         'examples/references/integers/4A.py')
@@ -77,3 +92,31 @@ if __name__ == "__main__":
 
     inputs = Task.generate_tests()
     print(inputs)
+
+    jury_answers = []
+
+    exec(to_source(target_function), locals())
+    for input in inputs:
+        solve_call = make_function_call('solve', input)
+
+        jury_answers.append(eval(solve_call))
+
+    survived_mutants = []
+    for mutation in mutator.mutations:
+        exec(to_source(mutation), locals())
+
+        status = 'SURVIVED'
+        for index, input in enumerate(inputs):
+            solve_call = make_function_call('solve', input)
+
+            output = eval(solve_call)
+            if output != jury_answers[index]:
+                status = 'KILLED'
+                break
+
+        if status is 'SURVIVED':
+            survived_mutants.append(mutation)
+
+    print(jury_answers)
+    for mutation in survived_mutants:
+        print(astor.to_source(mutation))
