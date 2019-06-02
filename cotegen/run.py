@@ -21,18 +21,15 @@ class MutationRunner():
         self.input_parameters = ast_utils.get_input_parameters(target_file)
         self.target_function = ast_utils.get_solve_function(target_file)
         self.compare_function = ast_utils.get_compare_function(target_file)
-        self.convert = ast_utils.find_function(target_file, 'convert_input_parameters_to_test')
+        self.convert = ast_utils.get_convert_function(target_file)
 
         self.mutations = []
-
         self.test_suite = None
-
         self.survived = []
 
     def generate_mutations(self):
         mutator = Mutator(self.target_function)
         mutator.apply_mutations()
-        mutator.print_mutations()
         self.mutations = mutator.mutations
 
     def generate_initial_tests(self):

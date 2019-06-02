@@ -13,14 +13,14 @@ class Status(Enum):
 
 class Context():
     def __init__(self, mutation):
-        self.mutation = mutation
+        self.ast_node = mutation
         self.ID = None
         self.status = Status.UNEXECUTED
         self.killed_by = []
 
     def execute(self, test_suite):
         self.status = Status.SURVIVED
-        result = test_suite.run(self.mutation)
+        result = test_suite.run(self.ast_node)
 
         if result == 'FAIL':
             self.status = Status.KILLED
@@ -33,6 +33,6 @@ class Context():
             print(self.killed_by)
 
         if verbose:
-            ast_utils.print_ast(self.mutation)
+            ast_utils.print_ast(self.ast_node)
 
         print('\n')
