@@ -41,10 +41,15 @@ class Mutator(ast_utils.TreeWalk):
         self.mutations = []
         self.target = target_function_AST
 
+        self.in_context_should_not_mutate = False
+
     def apply_mutations(self):
         ast_utils.TreeWalk.walk(self, self.target)
 
     def pre_Compare(self):
+        if self.in_context_should_not_mutate:
+            return
+
         original = self.cur_node
         mutants = mutate_compare(original)
         for mutant in mutants:
@@ -55,6 +60,9 @@ class Mutator(ast_utils.TreeWalk):
             self.replace(original)
 
     def pre_BoolOp(self):
+        if self.in_context_should_not_mutate:
+            return
+
         original = self.cur_node
         mutants = mutate_and_or(original)
         for mutant in mutants:
@@ -72,6 +80,12 @@ class Mutator(ast_utils.TreeWalk):
 
     def pre_FunctionDef(self):
         pass
+
+    def pre_Assert(self):
+        self.in_context_should_not_mutate = True
+
+    def post_Assert(self):
+        self.in_context_should_not_mutate = False
 
     # TODO: mutation ID
     def get_mutation(self, id=None):

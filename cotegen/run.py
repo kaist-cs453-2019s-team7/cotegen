@@ -15,6 +15,7 @@ class MutationRunner():
         Task.input_parameters = ast_utils.get_input_parameters(target_file)
         self.target_function = ast_utils.get_solve_function(target_file)
         self.compare_function = ast_utils.get_compare_function(target_file)
+        self.convert = ast_utils.find_function(target_file, 'convert_input_parameters_to_test')
 
         self.mutations = []
 
@@ -32,7 +33,7 @@ class MutationRunner():
         inputs = Task.generate_tests()
 
         self.test_suite = TestSuite(self.target_function,
-                               inputs, self.compare_function)
+                               inputs, self.compare_function, self.convert)
 
     def execute_mutations(self):
         for mutation in self.mutations:
@@ -49,9 +50,7 @@ class MutationRunner():
 
 
 if __name__ == "__main__":
-    # 996A: AssertionError
-    # 263A: handle convert_input_parameters function
-    runner = MutationRunner('examples/references/integers/4A.py')
+    runner = MutationRunner('examples/references/integers/996A.py')
 
     runner.generate_mutations()
     runner.generate_initial_tests()

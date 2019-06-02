@@ -1,5 +1,7 @@
 import cotegen.ast_utils as ast_utils
 
+from typing import List, Tuple
+
 
 def make_function_call(function_name, args):
     call_str = '{func}('.format(func=function_name)
@@ -16,9 +18,11 @@ def make_function_call(function_name, args):
 
 
 class TestSuite():
-    def __init__(self, original_function, inputs, compare=None):
+    def __init__(self, original_function, inputs, compare, convert=None):
         self.tests = []
         self.compare_exec = ast_utils.ast_to_executable(compare)
+        self.convert_exec = ast_utils.ast_to_executable(
+            convert) if convert else None
         self.failed_tests = []
 
         original_function_exec = ast_utils.ast_to_executable(original_function)
@@ -45,10 +49,19 @@ class TestSuite():
 
         return result
 
-    @staticmethod
-    def solve(input):
+    def solve(self, input):
+        if self.convert_exec:
+            exec(self.convert_exec, locals(), globals())
+            convert_call = make_function_call(
+                'convert_input_parameters_to_test', {'test': input})
+            input = eval(convert_call)
+
         solve_call = make_function_call('solve', input)
-        return eval(solve_call)
+        
+        try:
+            return eval(solve_call)
+        except AssertionError:
+            return None
 
     @staticmethod
     def compare(user_answer, jury_answer):
@@ -58,4 +71,3 @@ class TestSuite():
         }
         compare_call = make_function_call('compare', comparators)
         return eval(compare_call)
-

@@ -10,11 +10,10 @@ class CF263A(cotegen.Task):
         'x': cotegen.types.Integer(0, 24),
     }
 
-    @classmethod
-    def convert_input_parameters_to_test(cls, test) -> dict:
+    def convert_input_parameters_to_test(test) -> dict:
         ret = [[0] * 5 for _ in range(5)]
         ret[test['x'] // 5][test['x'] % 5] = 1
-        return ret
+        return { 'a': ret }
 
     output_type = int
 
