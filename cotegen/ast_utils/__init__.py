@@ -2,12 +2,12 @@ import astor
 import ast
 
 from .tree_walk import TreeWalk
-from .find_node import find_assign, find_function
+from .parse_file import code_to_ast, find_assign, find_function, get_solve_function, get_compare_function, get_input_parameters
 
 # TODO: handle both directions with one predifined dictionary
 # Now it's quite stupid
 
-def to_source(op):
+def to_string(op):
     op_string = None
     if isinstance(op, ast.GtE):
         op_string = '<='
@@ -49,6 +49,9 @@ def to_ast_node(op_string):
         op = ast.Or()
 
     return op
+
+def ast_to_executable(ast_expr):
+        return compile(ast.Module(body=[ast_expr]), '', 'exec')
 
 def print_ast(node):
     print(astor.to_source(node))

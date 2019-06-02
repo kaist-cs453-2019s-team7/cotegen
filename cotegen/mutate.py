@@ -1,7 +1,9 @@
 import copy
 
+from .context import Context
+
 from cotegen.mutation_ops import compare_mutation, and_or_mutation, operator_mutation, keyword_mutation
-from cotegen.ast_utils import TreeWalk, to_source, to_ast_node, print_ast
+import cotegen.ast_utils as ast_utils
 
 
 def mutate_compare(compare):
@@ -9,9 +11,9 @@ def mutate_compare(compare):
 
     for index, op in enumerate(compare.ops):
         for key, new_op in compare_mutation.items():
-            if to_source(op) == key:
+            if ast_utils.to_string(op) == key:
                 mutant = copy.deepcopy(compare)
-                mutant.ops[index] = to_ast_node(new_op)
+                mutant.ops[index] = ast_utils.to_ast_node(new_op)
 
                 mutants.append(mutant)
 
@@ -24,30 +26,30 @@ def mutate_and_or(boolop):
     op = boolop.op
 
     for key, new_op in and_or_mutation.items():
-            if to_source(op) == key:
+            if ast_utils.to_string(op) == key:
                 mutant = copy.deepcopy(boolop)
-                mutant.op = to_ast_node(new_op)
+                mutant.op = ast_utils.to_ast_node(new_op)
 
                 mutants.append(mutant)
 
     return mutants
 
 
-class Mutator(TreeWalk):
+class Mutator(ast_utils.TreeWalk):
     def __init__(self, target_function_AST):
-        TreeWalk.__init__(self)
+        ast_utils.TreeWalk.__init__(self)
         self.mutations = []
         self.target = target_function_AST
 
     def apply_mutations(self):
-        TreeWalk.walk(self, self.target)
+        ast_utils.TreeWalk.walk(self, self.target)
 
     def pre_Compare(self):
         original = self.cur_node
         mutants = mutate_compare(original)
         for mutant in mutants:
             self.replace(mutant)
-            mutation = copy.deepcopy(self.target)
+            mutation = Context(copy.deepcopy(self.target))
             self.mutations.append(mutation)
 
             self.replace(original)
@@ -57,7 +59,7 @@ class Mutator(TreeWalk):
         mutants = mutate_and_or(original)
         for mutant in mutants:
             self.replace(mutant)
-            mutation = copy.deepcopy(self.target)
+            mutation = Context(copy.deepcopy(self.target))
             self.mutations.append(mutation)
 
             self.replace(original)
@@ -80,4 +82,4 @@ class Mutator(TreeWalk):
     def print_mutations(self):
         # should print all mutated functions
         for mutation in self.mutations:
-            print_ast(mutation)
+            mutation.print(verbose=True)
