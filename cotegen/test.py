@@ -25,8 +25,7 @@ class TestSuite():
 
         exec(original_function_exec, locals(), globals())
         for input in inputs:
-            solve_call = make_function_call('solve', input)
-            jury_answer = eval(solve_call)
+            jury_answer = output = self.solve(input)
 
             self.tests.append((input, jury_answer))
 
@@ -37,16 +36,26 @@ class TestSuite():
 
         result = 'SUCCESS'  # TODO: use Enum
         for input, jury_answer in self.tests:
-            solve_call = make_function_call('solve', input)
-            output = eval(solve_call)
+            output = self.solve(input)
 
-            comparators = {
-                'user_answer': output,
-                'jury_answer': jury_answer
-            }
-            compare_call = make_function_call('compare', comparators)
-            if eval(compare_call) == False:
+            if self.compare(output, jury_answer) == False:
                 self.failed_tests.append((input, jury_answer))
-                result = 'FAIL'
+                if result == 'SUCCESS':
+                    result = 'FAIL'
 
         return result
+
+    @staticmethod
+    def solve(input):
+        solve_call = make_function_call('solve', input)
+        return eval(solve_call)
+
+    @staticmethod
+    def compare(user_answer, jury_answer):
+        comparators = {
+            'user_answer': user_answer,
+            'jury_answer': jury_answer
+        }
+        compare_call = make_function_call('compare', comparators)
+        return eval(compare_call)
+

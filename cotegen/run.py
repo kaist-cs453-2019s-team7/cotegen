@@ -16,11 +16,9 @@ class MutationRunner():
         self.target_function = ast_utils.get_solve_function(target_file)
         self.compare_function = ast_utils.get_compare_function(target_file)
 
-        # TODO: make `Context` object containing each mutation and its corresponding information
         self.mutations = []
 
-        # TODO: make `Test` object
-        self.tests = None
+        self.test_suite = None
 
         self.survived = []
 
@@ -33,12 +31,12 @@ class MutationRunner():
     def generate_initial_tests(self):
         inputs = Task.generate_tests()
 
-        self.tests = TestSuite(self.target_function,
+        self.test_suite = TestSuite(self.target_function,
                                inputs, self.compare_function)
 
     def execute_mutations(self):
         for mutation in self.mutations:
-            mutation.execute(self.tests)
+            mutation.execute(self.test_suite)
 
     def print_survived_mutants(self):
         for mutation in self.mutations:
