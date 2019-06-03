@@ -4,11 +4,14 @@ from . import Type
 
 from cotegen.exceptions import CotegenTypeDeclarationError
 
+import itertools
+
 class IntegerSequence(Type):
     _NUM_RANDOM = 5
     _NUM_ELEMENT_BOUNDARY = 2
     _NUM_LENGTH_BOUNDARY = 1
     _MAX_LENGTH = 100000
+    _NUM_SMALL_TESTS_BOUND = 10
 
     def __init__(self, min_length: int = 1, max_length: int = 100000,
                         lower_bound: int = (-2**31), upper_bound: int = (2**31) - 1):
@@ -44,6 +47,10 @@ class IntegerSequence(Type):
         ret = []
         for n in set(range(self.min_length, self.min_length + self._NUM_LENGTH_BOUNDARY + 1)) \
                     | set(range(self.max_length - self._NUM_LENGTH_BOUNDARY, self.max_length + 1)):
+            if n <= 4 and ((self.upper_bound - self.lower_bound + 1) ** n) <= self._NUM_SMALL_TESTS_BOUND:
+                ret.extend(map(list, itertools.product(range(self.lower_bound, self.upper_bound + 1), repeat=n)))
+                continue
+
             if self.min_length <= n <= self.max_length:
                 for v in range(self.lower_bound, self.lower_bound + self._NUM_ELEMENT_BOUNDARY + 1):
                     ret.append([self.random_element(self.lower_bound, v) for _ in range(n)])
@@ -54,10 +61,15 @@ class IntegerSequence(Type):
                                         self.max_length - self._NUM_LENGTH_BOUNDARY - 1)
         remaining_element_interval = (self.lower_bound + self._NUM_ELEMENT_BOUNDARY + 1,
                                         self.upper_bound - self._NUM_ELEMENT_BOUNDARY - 1)
-        if remaining_element_interval[0] <= remaining_element_interval[1] and \
-            remaining_length_interval[0] <= remaining_length_interval[1]:
+
+        if remaining_length_interval[0] <= remaining_length_interval[1]:
             for i in range(self._NUM_RANDOM):
                 n = self.random_length(*remaining_length_interval)
+                ret.append([self.random_element(self.lower_bound, self.upper_bound) for _ in range(n)])
+
+        if remaining_element_interval[0] <= remaining_element_interval[1]:
+            for i in range(self._NUM_RANDOM):
+                n = self.random_length(self.min_length, self.max_length)
                 ret.append([self.random_element(*remaining_element_interval) for _ in range(n)])
 
         return sorted(filter(self.is_valid, ret))
