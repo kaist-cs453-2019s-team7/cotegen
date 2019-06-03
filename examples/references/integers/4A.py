@@ -19,6 +19,10 @@ class CF4A(cotegen.Task):
     def compare(user_answer: str, jury_answer: str) -> bool:
         return user_answer.strip().lower() == jury_answer.strip().lower()
 
+    def convert_input_to_string(w: int) -> str:
+        return "%d\n" % w
+
 
 if __name__ == '__main__':
     print(CF4A.generate_tests())
+    CF4A.generate_test_files("input")
