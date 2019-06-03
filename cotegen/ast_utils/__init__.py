@@ -2,7 +2,7 @@ import astor
 import ast
 
 from .tree_walk import TreeWalk
-from .parse_file import code_to_ast, find_assign, find_function, get_solve_function, get_compare_function, get_input_parameters
+from .parse_file import find_assign, find_function, get_solve_function, get_compare_function, get_input_parameters
 
 # TODO: handle both directions with one predifined dictionary
 # Now it's quite stupid
@@ -55,5 +55,3 @@ def ast_to_executable(ast_expr):
 
 def print_ast(node):
     print(astor.to_source(node))
-
-

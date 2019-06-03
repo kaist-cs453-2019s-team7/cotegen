@@ -8,11 +8,17 @@ from .test import TestSuite
 import cotegen.ast_utils as ast_utils
 import cotegen
 
+import astor, ast
+import inspect
+
 
 class MutationRunner():
-    def __init__(self, file_location):
-        target_file = ast_utils.code_to_ast(file_location)
-        Task.input_parameters = ast_utils.get_input_parameters(target_file)
+    def __init__(self, task: Task):
+        self.task = task
+        # TODO: 이렇게 하면 class가 indent되어 있을 때 오류가 발생할 수 있음.
+        target_file = ast.parse(inspect.getsource(task))
+
+        self.input_parameters = ast_utils.get_input_parameters(target_file)
         self.target_function = ast_utils.get_solve_function(target_file)
         self.compare_function = ast_utils.get_compare_function(target_file)
         self.convert = ast_utils.find_function(target_file, 'convert_input_parameters_to_test')
@@ -30,7 +36,7 @@ class MutationRunner():
         self.mutations = mutator.mutations
 
     def generate_initial_tests(self):
-        inputs = Task.generate_tests()
+        inputs = self.task.generate_tests()
 
         self.test_suite = TestSuite(self.target_function,
                                inputs, self.compare_function, self.convert)
@@ -47,13 +53,3 @@ class MutationRunner():
     def print_all_mutants(self):
         for mutation in self.mutations:
             mutation.print(verbose=False)
-
-
-if __name__ == "__main__":
-    runner = MutationRunner('examples/references/integers/996A.py')
-
-    runner.generate_mutations()
-    runner.generate_initial_tests()
-    runner.execute_mutations()
-
-    runner.print_all_mutants()

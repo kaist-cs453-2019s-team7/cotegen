@@ -1,10 +1,7 @@
-import ast
-import astor
+import astor, ast
 
 import cotegen
 
-def code_to_ast(file_location):
-    return astor.code_to_ast.parse_file(file_location)
 
 def get_solve_function(target_file):
     return find_function(target_file, 'solve')

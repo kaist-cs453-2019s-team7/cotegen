@@ -4,6 +4,9 @@ from typing import List, Tuple
 
 
 def make_function_call(function_name, args):
+    if len(args) == 0:
+        return '{func}()'.format(func=function_name)
+
     call_str = '{func}('.format(func=function_name)
 
     for id, value in args.items():
@@ -57,7 +60,7 @@ class TestSuite():
             input = eval(convert_call)
 
         solve_call = make_function_call('solve', input)
-        
+
         try:
             return eval(solve_call)
         except AssertionError:
