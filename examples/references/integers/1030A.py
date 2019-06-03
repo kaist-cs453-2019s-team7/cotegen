@@ -1,10 +1,10 @@
 import cotegen
 
-# http://codeforces.com/problemset/problem/1070/A
+# http://codeforces.com/problemset/problem/1030/A
 
 from typing import List
 
-class CF1070A(cotegen.Task):
+class CF1030A(cotegen.Task):
     input_parameters = \
         {
             'a': cotegen.types.IntegerSequence(1, 100, 0, 1),
@@ -25,7 +25,7 @@ class CF1070A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    tests = CF1070A.generate_tests()
+    tests = CF1030A.generate_tests()
     print(len(tests))
     for test in tests:
         print(test)
