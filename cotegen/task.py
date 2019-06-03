@@ -12,7 +12,7 @@ class Task:
 
     @classmethod
     def compare(cls, user_answer, jury_answer) -> bool:
-        raise NotImplementedError
+        return user_answer == jury_answer
 
     @classmethod
     def convert_input_parameters_to_test(cls, test) -> dict:
