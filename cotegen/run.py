@@ -32,7 +32,9 @@ class MutantKiller():
 
     # for test calculating fitness
     def generate_sbst_inputs(self):
-        fitness_calculator = FitnessCalculator(self.target_function, (1, True))
+        fitness_calculator = FitnessCalculator(self.target_function, self.mutant.branch_id)
+
+        print(astor.to_source(self.target_function.node))
 
         searcher = AVM(fitness_calculator, self.retry_count)
 
