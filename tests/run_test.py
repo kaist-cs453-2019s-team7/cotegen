@@ -10,11 +10,14 @@ from os.path import isfile, join
 
 
 path = 'examples/references/integers/'
-target_files = [join(path, f) for f in listdir(path) if isfile(join(path, f))]
+target_files = [(join(path, f), f[:-3]) for f in listdir(path) if isfile(join(path, f))]
 
 def test_mutate():
-    for target_file in target_files:
-        mutation_runner = MutationRunner(target_file)
+    for target_file, file_name in target_files:
+        import importlib.machinery
+        task = importlib.machinery.SourceFileLoader('', target_file).load_module().__dict__['CF' + file_name]
+
+        mutation_runner = MutationRunner(task)
         print(target_file)
 
         original_solve = copy.deepcopy(mutation_runner.target_function)
@@ -25,7 +28,7 @@ def test_mutate():
         assert to_source(
             original_solve) == to_source(mutation_runner.target_function)
 
-        # should generate mutations diffrent from original
+        # should generate mutations different from original
         for mutation in mutation_runner.mutations:
             assert to_source(
                 original_solve) != to_source(mutation.ast_node)
