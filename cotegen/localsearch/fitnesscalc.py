@@ -25,9 +25,6 @@ class FitnessCalculator():
         branch_tree = target_function.branch_tree
         self.nodes_on_path = branch_tree.get_nodes_on_path(target_branch)
 
-    def get_args_count(self):
-        return self.target_function.args_count
-
     def calculate(self, args):
         if self.is_always_reachable:
             return 0

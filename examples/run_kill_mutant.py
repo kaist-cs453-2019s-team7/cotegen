@@ -8,7 +8,7 @@ import importlib.machinery
 
 
 if __name__ == "__main__":
-    filename = '791A'
+    filename = '4A'
     task = importlib.machinery.SourceFileLoader('','examples/references/integers/{}.py'.format(filename)).load_module().__dict__['CF' + filename]
 
     runner = MutationRunner(task)
@@ -22,7 +22,8 @@ if __name__ == "__main__":
     for survivor in runner.survived:
         mutantKiller = MutantKiller(task, survivor, runner.test_suite)
         new_inputs = mutantKiller.generate_sbst_inputs()
-        print(new_inputs)
+
+        new_test_suite = mutantKiller.generate_new_test_suite()
 
     # TODO: new_input들에 대해 mutant를 kill 시키는지 확인
 
