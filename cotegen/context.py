@@ -29,8 +29,7 @@ class Context():
     def print(self, verbose=True):
         print(self.status)
         if self.status == Status.KILLED:
-            print('KILLED BY:')
-            print(self.killed_by)
+            print('KILLED BY: {} tests'.format(len(self.killed_by)))
 
         if verbose:
             ast_utils.print_ast(self.ast_node)

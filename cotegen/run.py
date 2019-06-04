@@ -21,7 +21,6 @@ class MutationRunner():
         self.input_parameters = ast_utils.get_input_parameters(target_file)
         self.target_function = ast_utils.get_solve_function(target_file)
         self.compare_function = ast_utils.get_compare_function(target_file)
-        self.convert = ast_utils.get_convert_function(target_file)
 
         self.mutations = []
         self.test_suite = None
@@ -36,17 +35,17 @@ class MutationRunner():
         inputs = self.task.generate_tests()
 
         self.test_suite = TestSuite(self.target_function,
-                               inputs, self.compare_function, self.convert)
+                               inputs, self.compare_function)
 
     def execute_mutations(self):
         for mutation in self.mutations:
             mutation.execute(self.test_suite)
 
-    def print_survived_mutants(self):
+    def print_survived_mutants(self, verbose=True):
         for mutation in self.mutations:
             if mutation.status == Status.SURVIVED:
-                mutation.print(verbose=True)
+                mutation.print(verbose)
 
-    def print_all_mutants(self):
+    def print_all_mutants(self, verbose=False):
         for mutation in self.mutations:
-            mutation.print(verbose=False)
+            mutation.print(verbose)

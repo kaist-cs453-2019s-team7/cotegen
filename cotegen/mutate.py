@@ -6,16 +6,27 @@ from cotegen.mutation_ops import compare_mutation, and_or_mutation, operator_mut
 import cotegen.ast_utils as ast_utils
 
 
+def _mutate_by_op(original, op, set_target_attribute, mutation_op):
+    mutants = []
+    for key, new_op in mutation_op.items():
+        if ast_utils.to_string(op) == key:
+            mutant = copy.deepcopy(original)
+            set_target_attribute(mutant, ast_utils.to_ast_node(new_op))
+
+            mutants.append(mutant)
+
+    return mutants
+
+
 def mutate_compare(compare):
     mutants = []
 
     for index, op in enumerate(compare.ops):
-        for key, new_op in compare_mutation.items():
-            if ast_utils.to_string(op) == key:
-                mutant = copy.deepcopy(compare)
-                mutant.ops[index] = ast_utils.to_ast_node(new_op)
+        def set_target_attribute(mutant, new_op):
+            mutant.ops[index] = new_op
 
-                mutants.append(mutant)
+        mutants.extend(_mutate_by_op(
+            compare, op, set_target_attribute, compare_mutation))
 
     return mutants
 
@@ -25,12 +36,31 @@ def mutate_and_or(boolop):
 
     op = boolop.op
 
-    for key, new_op in and_or_mutation.items():
-            if ast_utils.to_string(op) == key:
-                mutant = copy.deepcopy(boolop)
-                mutant.op = ast_utils.to_ast_node(new_op)
+    def set_target_attribute(mutant, new_op):
+        mutant.op = new_op
 
-                mutants.append(mutant)
+    mutants.extend(_mutate_by_op(
+        boolop, op, set_target_attribute, and_or_mutation))
+
+    return mutants
+
+
+def mutate_operation(operation):
+    mutants = []
+
+    op = operation.op
+
+    def set_target_attribute(mutant, new_op):
+        mutant.op = new_op
+
+    mutants.extend(_mutate_by_op(
+        operation, op, set_target_attribute, operator_mutation))
+
+    return mutants
+
+
+def mutate_number(number):
+    mutants = [ast_utils.increment(number), ast_utils.decrement(number)]
 
     return mutants
 
@@ -50,27 +80,31 @@ class Mutator(ast_utils.TreeWalk):
         if self.in_context_should_not_mutate:
             return
 
-        original = self.cur_node
-        mutants = mutate_compare(original)
-        for mutant in mutants:
-            self.replace(mutant)
-            mutation = Context(copy.deepcopy(self.target))
-            self.mutations.append(mutation)
-
-            self.replace(original)
+        self.mutations.extend(self.mutate_current_node(mutate_compare))
 
     def pre_BoolOp(self):
         if self.in_context_should_not_mutate:
             return
 
-        original = self.cur_node
-        mutants = mutate_and_or(original)
-        for mutant in mutants:
-            self.replace(mutant)
-            mutation = Context(copy.deepcopy(self.target))
-            self.mutations.append(mutation)
+        self.mutations.extend(self.mutate_current_node(mutate_and_or))
 
-            self.replace(original)
+    def pre_BinOp(self):
+        if self.in_context_should_not_mutate:
+            return
+
+        self.mutations.extend(self.mutate_current_node(mutate_operation))
+
+    def pre_AugAssign(self):
+        if self.in_context_should_not_mutate:
+            return
+
+        self.mutations.extend(self.mutate_current_node(mutate_operation))
+
+    def pre_Num(self):
+        if self.in_context_should_not_mutate:
+            return
+
+        self.mutations.extend(self.mutate_current_node(mutate_number))
 
     def pre_If(self):
         pass
@@ -97,3 +131,17 @@ class Mutator(ast_utils.TreeWalk):
         # should print all mutated functions
         for mutation in self.mutations:
             mutation.print(verbose=True)
+
+    def mutate_current_node(self, mutate_func):
+        mutations = []
+
+        original = self.cur_node
+        mutants = mutate_func(original)
+        for mutant in mutants:
+            self.replace(mutant)
+            mutation = Context(copy.deepcopy(self.target))
+            mutations.append(mutation)
+
+            self.replace(original)
+
+        return mutations

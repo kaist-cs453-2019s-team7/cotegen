@@ -8,13 +8,13 @@ from astor import to_source
 from os import listdir
 from os.path import isfile, join
 
+import importlib.machinery
 
 path = 'examples/references/integers/'
 target_files = [(join(path, f), f[:-3]) for f in listdir(path) if isfile(join(path, f))]
 
 def test_mutate():
     for target_file, file_name in target_files:
-        import importlib.machinery
         task = importlib.machinery.SourceFileLoader('', target_file).load_module().__dict__['CF' + file_name]
 
         mutation_runner = MutationRunner(task)

@@ -21,11 +21,9 @@ def make_function_call(function_name, args):
 
 
 class TestSuite():
-    def __init__(self, original_function, inputs, compare, convert=None):
+    def __init__(self, original_function, inputs, compare):
         self.tests = []
         self.compare_exec = ast_utils.ast_to_executable(compare)
-        self.convert_exec = ast_utils.ast_to_executable(
-            convert) if convert else None
         self.failed_tests = []
 
         original_function_exec = ast_utils.ast_to_executable(original_function)
@@ -52,19 +50,20 @@ class TestSuite():
 
         return result
 
-    def solve(self, input):
-        if self.convert_exec:
-            exec(self.convert_exec, locals(), globals())
-            convert_call = make_function_call(
-                'convert_input_parameters_to_test', {'test': input})
-            input = eval(convert_call)
-
+    @staticmethod
+    def solve(input):
         solve_call = make_function_call('solve', input)
 
         try:
             return eval(solve_call)
         except AssertionError:
             return None
+        except ZeroDivisionError:
+            return None
+        except IndexError:
+            return None
+
+        # TODO: handle invalid mutants (generating above Exceptions)
 
     @staticmethod
     def compare(user_answer, jury_answer):
