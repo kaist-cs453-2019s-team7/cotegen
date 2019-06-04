@@ -6,6 +6,11 @@ class Task:
     output_type = None
     constraints = []
 
+    branch_tree = None
+    ast_node = {
+        'solve': None,
+    }
+
     @classmethod
     def solve(cls, **kwargs):
         raise NotImplementedError

@@ -18,6 +18,9 @@ class Context():
         self.status = Status.UNEXECUTED
         self.killed_by = []
 
+        self.is_mutant_in_predicate = False
+        self.branch_id = None
+
     def execute(self, test_suite):
         self.status = Status.SURVIVED
         result = test_suite.run(self.ast_node)
@@ -33,5 +36,7 @@ class Context():
 
         if verbose:
             ast_utils.print_ast(self.ast_node)
+            print('in predicate: ', self.is_mutant_in_predicate)
+            print(self.branch_id)
 
         print('\n')
