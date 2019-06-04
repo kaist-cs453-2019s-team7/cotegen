@@ -36,7 +36,7 @@ class MutantKiller():
 
         print(astor.to_source(self.target_function.node))
 
-        searcher = AVM(fitness_calculator, self.retry_count)
+        searcher = AVM(fitness_calculator, input_parameters=self.task.input_parameters, constraints=self.task.constraints)
 
         minimised_args, fitness_value = searcher.minimise()
 

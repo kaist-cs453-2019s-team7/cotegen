@@ -4,9 +4,11 @@ from cotegen.run import MutationRunner, MutantKiller
 
 import importlib.machinery
 
+# Survived mutants in 158, 617, 263, 791, 4, 977
+
 
 if __name__ == "__main__":
-    filename = '4A'
+    filename = '791A'
     task = importlib.machinery.SourceFileLoader('','examples/references/integers/{}.py'.format(filename)).load_module().__dict__['CF' + filename]
 
     runner = MutationRunner(task)
