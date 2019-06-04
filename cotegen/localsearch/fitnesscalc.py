@@ -29,6 +29,9 @@ class FitnessCalculator():
         return self.target_function.args_count
 
     def calculate(self, args):
+        if self.is_always_reachable:
+            return 0
+
         trace = Trace()
 
         exec(self.exec, locals(), globals())
