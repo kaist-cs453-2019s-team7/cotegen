@@ -10,6 +10,9 @@ def get_solve_function(target_file):
 def get_compare_function(target_file):
     return find_function(target_file, 'compare')
 
+def get_convert_function(target_file):
+    return find_function(target_file, 'convert_input_parameters_to_test')
+
 
 def get_input_parameters(target_file):
     assign_stmt = find_assign(target_file, 'input_parameters')

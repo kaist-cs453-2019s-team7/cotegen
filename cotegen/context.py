@@ -13,14 +13,17 @@ class Status(Enum):
 
 class Context():
     def __init__(self, mutation):
-        self.mutation = mutation
+        self.ast_node = mutation
         self.ID = None
         self.status = Status.UNEXECUTED
         self.killed_by = []
 
+        self.is_mutant_in_predicate = False
+        self.branch_id = None
+
     def execute(self, test_suite):
         self.status = Status.SURVIVED
-        result = test_suite.run(self.mutation)
+        result = test_suite.run(self.ast_node)
 
         if result == 'FAIL':
             self.status = Status.KILLED
@@ -29,10 +32,11 @@ class Context():
     def print(self, verbose=True):
         print(self.status)
         if self.status == Status.KILLED:
-            print('KILLED BY:')
-            print(self.killed_by)
+            print('KILLED BY: {} tests'.format(len(self.killed_by)))
 
         if verbose:
-            ast_utils.print_ast(self.mutation)
+            ast_utils.print_ast(self.ast_node)
+            print('in predicate: ', self.is_mutant_in_predicate)
+            print(self.branch_id)
 
         print('\n')
