@@ -12,12 +12,10 @@ class CF1A(cotegen.Task):
 
     output_type = int
 
-    @classmethod
     def solve(n: int, m: int, a: int) -> int:
         # 1 <= n, m, a <= 10**9
         return ((n + (a-1)) // a) * ((m + (a-1)) // a)
 
-    @classmethod
     def compare(user_answer: int, jury_answer: int) -> bool:
         return user_answer == jury_answer
 
