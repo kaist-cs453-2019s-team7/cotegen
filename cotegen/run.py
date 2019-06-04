@@ -41,6 +41,15 @@ class MutationRunner():
         for mutation in self.mutations:
             mutation.execute(self.test_suite)
 
+    def count_survived_mutants(self, verbose=True):
+        count = 0
+
+        for mutation in self.mutations:
+            if mutation.status == Status.SURVIVED:
+                count += 1
+        
+        return count
+
     def print_survived_mutants(self, verbose=True):
         for mutation in self.mutations:
             if mutation.status == Status.SURVIVED:

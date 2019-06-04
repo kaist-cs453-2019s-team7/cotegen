@@ -24,6 +24,11 @@ if __name__ == "__main__":
         runner.generate_initial_tests()
         runner.execute_mutations()
 
-        print('target: {}'.format(file_name))
-        print('{} mutants survived'.format(len(runner.survived)))
-        runner.print_survived_mutants(verbose=True)
+        # only print cases with survived mutants
+
+        survived_count = runner.count_survived_mutants()
+
+        if survived_count > 0:
+            print('target: {}'.format(file_name))
+            print('{} mutants survived'.format(survived_count))
+            runner.print_survived_mutants(verbose=True)
