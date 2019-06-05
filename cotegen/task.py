@@ -1,6 +1,9 @@
 import random
 import os
 
+from .exceptions import CotegenTaskConstraintError
+
+
 class Task:
     num_test_tries = 10
     input_parameters = {}
