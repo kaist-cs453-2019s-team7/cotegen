@@ -36,7 +36,7 @@ class Context():
 
         if verbose:
             ast_utils.print_ast(self.ast_node)
-            print('in predicate: ', self.is_mutant_in_predicate)
-            print(self.branch_id)
+            # print('in predicate: ', self.is_mutant_in_predicate)
+            # print(self.branch_id)
 
         print('\n')

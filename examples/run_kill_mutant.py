@@ -10,8 +10,8 @@ import importlib.machinery
 
 
 if __name__ == "__main__":
-    filename = '617A'
-    task = importlib.machinery.SourceFileLoader('','examples/references/integers/{}.py'.format(filename)).load_module().__dict__['CF' + filename]
+    filename = 'BOJ2839'
+    task = importlib.machinery.SourceFileLoader('','examples/references/integers/{}.py'.format(filename)).load_module().__dict__[filename]
 
     runner = MutationRunner(task)
 
@@ -34,7 +34,4 @@ if __name__ == "__main__":
         print('\nmutation:')
         mutantKiller.generate_new_test_suite(mutation_inputs)
         print('\n')
-
-
-    # TODO: new_input들에 대해 mutant를 kill 시키는지 확인
 
