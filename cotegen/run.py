@@ -127,7 +127,7 @@ class MutationRunner():
         self.task.branch_tree = self.branch_tree = mutator.branch_tree
 
     def generate_initial_tests(self):
-        inputs = self.task.generate_tests()
+        inputs = self.task.generate_random_tests()
 
         self.test_suite = TestSuite(self.target_function,
                                     inputs, self.compare_function)

@@ -33,7 +33,7 @@ class CF977A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    tests = CF977A.generate_tests()
+    tests = CF977A.generate_random_tests()
     print(len(tests))
     for test in tests:
         print(test)

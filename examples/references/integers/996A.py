@@ -25,7 +25,7 @@ class CF996A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    tests = CF996A.generate_tests()
+    tests = CF996A.generate_random_tests()
     print(len(tests))
     for test in tests:
         print(test)

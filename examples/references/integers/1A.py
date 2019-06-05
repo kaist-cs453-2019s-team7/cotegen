@@ -21,4 +21,4 @@ class CF1A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    print(CF1A.generate_tests())
+    print(CF1A.generate_random_tests())

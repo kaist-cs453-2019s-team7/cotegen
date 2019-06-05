@@ -22,7 +22,7 @@ class CF617A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    tests = CF617A.generate_tests()
+    tests = CF617A.generate_random_tests()
     print(len(tests))
     for test in tests:
         print(test)

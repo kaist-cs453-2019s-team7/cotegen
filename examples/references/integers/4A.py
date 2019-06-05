@@ -24,5 +24,5 @@ class CF4A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    print(CF4A.generate_tests())
+    print(CF4A.generate_random_tests())
     CF4A.generate_test_files("input")

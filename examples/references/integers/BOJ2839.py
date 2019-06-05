@@ -27,4 +27,4 @@ class BOJ2839(cotegen.Task):
 
 
 if __name__ == '__main__':
-    print(BOJ2839.generate_tests())
+    print(BOJ2839.generate_random_tests())

@@ -31,7 +31,7 @@ class CF158A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    tests = CF158A.generate_tests()
+    tests = CF158A.generate_random_tests()
     print(len(tests))
     for test in tests:
         print(test)

@@ -34,7 +34,7 @@ class Task:
             and all(constraint.is_valid(test) for constraint in cls.constraints)
 
     @classmethod
-    def generate_tests(cls):
+    def generate_random_tests(cls):
         tests = [{}]
         input_parameters_until_now = dict()
 
@@ -108,7 +108,7 @@ class Task:
         if any(os.scandir(target_directory)):
             raise FileExistsError("target_directory not empty")
 
-        tests = cls.generate_tests()
+        tests = cls.generate_random_tests()
         for idx, test in enumerate(tests):
             with open(os.path.join(target_directory, "%03d.in" % idx), "w") as f:
                 f.write(cls.convert_input_to_string(**test))
