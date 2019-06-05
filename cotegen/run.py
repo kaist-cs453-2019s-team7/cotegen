@@ -98,8 +98,9 @@ class MutantKiller():
         new_test_suite = TestSuite(
             self.task.ast_node['solve'], inputs, self.task.ast_node['compare'])
 
-        print(new_test_suite.run(self.mutant.ast_node))
         return new_test_suite
+
+    
 
 
 class MutationRunner():

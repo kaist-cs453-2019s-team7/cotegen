@@ -35,6 +35,10 @@ class TestSuite():
 
             self.tests.append((input, jury_answer))
 
+    def print(self):
+        for input, jury_answer in self.tests:
+            print('{} => {}'.format(input, jury_answer))
+
     def run(self, target_function):
         target_function_exec = ast_utils.ast_to_executable(target_function)
         trace = Trace() # dummy trace object: TODO find better way
@@ -51,6 +55,21 @@ class TestSuite():
                     result = 'FAIL'
 
         return result
+
+    def add(self, test_suite):
+        self.tests.extend(test_suite.tests)
+        # remove duplicate
+        new_tests = []
+        for input, jury_answer in self.tests:
+            duplicate = False
+            for test in new_tests:
+                if test[0] == input:
+                    duplicate = True
+                    break
+            if not duplicate:
+                new_tests.append((input, jury_answer))
+
+        self.tests = new_tests
 
     @staticmethod
     def solve(input):
