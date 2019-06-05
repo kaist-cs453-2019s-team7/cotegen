@@ -73,7 +73,7 @@ def execute():
     mutants_killed = []
     mutants_survived = []
 
-    new_test_suite = None
+    new_test_suite = runner.test_suite
 
     for survivor in runner.mutations:
         mutantKiller = MutantKiller(task, survivor, runner.test_suite)
@@ -84,10 +84,7 @@ def execute():
             inputs.extend(mutantKiller.generate_mutation_sbst_inputs())
 
         generated_test_suite = mutantKiller.generate_new_test_suite(inputs)
-        if not new_test_suite:
-            new_test_suite = generated_test_suite
-        else:
-            new_test_suite.add(generated_test_suite)
+        new_test_suite.add(generated_test_suite)
     
     new_test_suite.print()
     
