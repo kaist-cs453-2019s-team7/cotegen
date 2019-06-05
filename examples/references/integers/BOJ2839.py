@@ -10,9 +10,16 @@ class BOJ2839(cotegen.Task):
     output_type = int
 
     def solve(n: int) -> int:
-        for i in range(5): # i: number of 3kg weights
-            if n >= 3 * i and (n - 3 * i) % 5 == 0:
-                return (n - 3 * i) // 5 + i
+        if n % 5 == 0:
+            return n // 5
+        elif n % 5 == 3:
+            return (n - 3) // 5 + 1
+        elif n >= 6 and n % 5 == 1:
+            return (n - 6) // 5 + 2
+        elif n >= 9 and n % 5 == 4:
+            return (n - 9) // 5 + 3
+        elif n >= 12 and n % 5 == 2:
+            return (n - 12) // 5 + 4
         return -1
 
     def compare(user_answer: int, jury_answer: int):
