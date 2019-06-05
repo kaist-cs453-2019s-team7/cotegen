@@ -62,8 +62,10 @@ def execute():
 
     if mode == 'mutation':
         mutations = runner.survived if show_survived else runner.mutations
+
         for mutation in mutations:
             mutation.print()
+
         print('{} mutants survived among {}'.format(len(runner.survived), len(runner.mutations)))
         return
 
@@ -89,7 +91,7 @@ def execute():
     new_test_suite.print()
     
     for survivor in runner.mutations:
-        test_result = new_test_suite.run(survivor.ast_node)
+        test_result, _ = new_test_suite.run(survivor.ast_node)
         if test_result == 'SUCCESS':
             mutants_survived.append(survivor)
         elif test_result == 'FAIL':
