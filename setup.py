@@ -8,4 +8,4 @@ setup(name='cotegen',
       description='KAIST CS453 2019 Spring Team 7 Project',
       packages=find_packages('cotegen'),
       package_dir={'': 'cotegen'},
-      setup_requires=['astor>=0.8.0'])
+      setup_requires=['astor>=0.8.0','anytree>=2.6.0'])
