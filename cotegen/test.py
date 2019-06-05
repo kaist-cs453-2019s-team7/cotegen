@@ -1,4 +1,5 @@
 import cotegen.ast_utils as ast_utils
+from .localsearch.trace import Trace
 
 from typing import List, Tuple
 
@@ -36,6 +37,7 @@ class TestSuite():
 
     def run(self, target_function):
         target_function_exec = ast_utils.ast_to_executable(target_function)
+        trace = Trace() # dummy trace object: TODO find better way
         exec(target_function_exec, locals(), globals())
         exec(self.compare_exec, locals(), globals())
 

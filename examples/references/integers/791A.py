@@ -22,7 +22,7 @@ class CF791A(cotegen.Task):
                 return i
             a *= 3
             b *= 2
-        assert False
+        return False
 
 
     def compare(user_answer: int, jury_answer: int) -> bool:

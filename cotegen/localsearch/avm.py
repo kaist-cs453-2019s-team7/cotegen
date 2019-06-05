@@ -5,7 +5,7 @@ import logging
 
 
 class AVM():
-    def __init__(self, fitness_calculator, input_parameters, retry_count=100, constraints=None):
+    def __init__(self, fitness_calculator, input_parameters, retry_count=10, constraints=None):
         self.fitness = fitness_calculator
         self.retry_count = retry_count
 

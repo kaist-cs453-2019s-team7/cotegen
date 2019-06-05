@@ -6,7 +6,7 @@ from .context import Context, Status
 from .test import TestSuite
 from .function_def import FunctionDef
 
-from cotegen.localsearch.fitnesscalc import FitnessCalculator
+from cotegen.localsearch.fitnesscalc import FitnessCalculator, MutationFitnessCalculator
 from cotegen.localsearch.avm import AVM
 
 import cotegen.ast_utils as ast_utils
@@ -21,7 +21,7 @@ class MutantKiller():
     # Kill given survived mutant
     # TODO: task가 모든 것을 담고 있게 만들기
     def __init__(self, task: Task, mutant: Context, test_suite: TestSuite, retry_count=10):
-        assert mutant.status == Status.SURVIVED
+        #assert mutant.status == Status.SURVIVED
 
         self.task = task
         self.mutant = mutant
@@ -31,13 +31,11 @@ class MutantKiller():
         solve_ast = self.task.ast_node['solve']
         branch_tree = self.task.branch_tree
         self.target_function = FunctionDef(solve_ast, branch_tree)
+        self.mutated_function = FunctionDef(self.mutant.ast_node, branch_tree)
 
-    # for test calculating fitness
     def generate_sbst_input(self):
         fitness_calculator = FitnessCalculator(
             self.target_function, self.mutant.branch_id)
-
-        # print(astor.to_source(self.target_function.node))
 
         searcher = AVM(fitness_calculator, input_parameters=self.task.input_parameters,
                        constraints=self.task.constraints)
@@ -50,7 +48,6 @@ class MutantKiller():
         else:
             return None
 
-    # for test calculating fitness
     def generate_sbst_inputs(self, count=100):
         inputs = []
         for i in range(count):
@@ -60,8 +57,33 @@ class MutantKiller():
 
         return inputs
 
-    def generate_new_test_suite(self):
-        raw_inputs = self.generate_sbst_inputs()
+    def generate_mutation_sbst_input(self):
+        fitness_calculator = MutationFitnessCalculator(
+            self.mutated_function, self.mutant.branch_id)
+
+        # print(astor.to_source(self.mutated_function.node))
+
+        searcher = AVM(fitness_calculator, input_parameters=self.task.input_parameters,
+                       constraints=self.task.constraints)
+
+        minimised_args, fitness_value = searcher.minimise()
+
+        if fitness_value == 0:
+            return minimised_args
+
+        else:
+            return None
+
+    def generate_mutation_sbst_inputs(self, count=100):
+        inputs = []
+        for i in range(count):
+            args = self.generate_mutation_sbst_input()
+            if args:
+                inputs.append(args)
+
+        return inputs
+
+    def generate_new_test_suite(self, raw_inputs):
         inputs = []  # with parameter id
 
         for args in raw_inputs:
@@ -69,6 +91,8 @@ class MutantKiller():
             for index, id in enumerate(self.task.input_parameters.keys()):
                 input[id] = args[index]
 
+            if self.task.convert_input_parameters_to_test:
+                input = self.task.convert_input_parameters_to_test(input)
             inputs.append(input)
 
         new_test_suite = TestSuite(
