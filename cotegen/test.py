@@ -46,15 +46,17 @@ class TestSuite():
         exec(self.compare_exec, locals(), globals())
 
         result = 'SUCCESS'  # TODO: use Enum
+        killed_by = []
         for input, jury_answer in self.tests:
             output = self.solve(input)
 
             if self.compare(output, jury_answer) == False:
-                self.failed_tests.append((input, jury_answer))
+                killed_by.append((input, jury_answer))
                 if result == 'SUCCESS':
                     result = 'FAIL'
 
-        return result
+        self.failed_tests.extend(killed_by)
+        return result, killed_by
 
     def add(self, test_suite):
         self.tests.extend(test_suite.tests)
