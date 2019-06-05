@@ -35,7 +35,8 @@ class FitnessCalculator():
 
         try:
             eval(self.target_function.call(args))
-        except AssertionError:
+        except (AssertionError, ZeroDivisionError):
+            # TODO: ZeroDivisionError is just to avoid the program to be terminated for BOJ2839
             return (10000, 0, 0, 0)
 
         executed_branches = trace.get_executed_branches()
