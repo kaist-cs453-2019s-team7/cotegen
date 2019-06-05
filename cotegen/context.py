@@ -23,11 +23,11 @@ class Context():
 
     def execute(self, test_suite):
         self.status = Status.SURVIVED
-        result = test_suite.run(self.ast_node)
+        result, killed_by = test_suite.run(self.ast_node)
 
         if result == 'FAIL':
             self.status = Status.KILLED
-            self.killed_by = test_suite.failed_tests
+            self.killed_by = killed_by
 
     def print(self, verbose=True):
         print(self.status)
