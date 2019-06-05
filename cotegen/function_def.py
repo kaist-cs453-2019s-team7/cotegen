@@ -67,7 +67,32 @@ class WalkPredicates(ast_utils.TreeWalk):
         rhs = ''
         f_call = ''
 
-        if not hasattr(compare_node, 'left') or not hasattr(compare_node, 'comparators'):
+        if isinstance(compare_node, ast.Call) and compare_node.func.value.id == 'trace':
+            return compare_node
+
+        if isinstance(compare_node, ast.BoolOp):
+            lhs = astor.to_source(compare_node.values[0]).rstrip()
+            rhs = astor.to_source(compare_node.values[1]).rstrip()
+            # TODO: handle <3 values in boolop?
+
+            if isinstance(compare_node.op, ast.And):
+                op = 'bool_and'
+            elif isinstance(compare_node.op, ast.Or):
+                op = 'bool_or'
+
+            f_call = 'trace.{fname}({branch_id}, {lhs}, {rhs})'.format(
+                fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)
+
+            f_call_node = ast.parse(f_call, '', 'eval').body
+
+            f_call_node.args[1] = self._inject_trace_hook(f_call_node.args[1], None)
+            f_call_node.args[2] = self._inject_trace_hook(f_call_node.args[2], None)
+
+            return f_call_node
+
+
+
+        elif not hasattr(compare_node, 'left') or not hasattr(compare_node, 'comparators'):
             op = 'is_true'
             arg = astor.to_source(compare_node).rstrip()
 
@@ -98,6 +123,7 @@ class WalkPredicates(ast_utils.TreeWalk):
                 fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)
 
         f_call_node = ast.parse(f_call, '', 'eval').body
+
 
         return f_call_node
 

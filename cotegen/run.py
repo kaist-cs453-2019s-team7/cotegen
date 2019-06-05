@@ -6,20 +6,22 @@ from .context import Context, Status
 from .test import TestSuite
 from .function_def import FunctionDef
 
-from cotegen.localsearch.fitnesscalc import FitnessCalculator
+from cotegen.localsearch.fitnesscalc import FitnessCalculator, MutationFitnessCalculator
 from cotegen.localsearch.avm import AVM
 
 import cotegen.ast_utils as ast_utils
 import cotegen
 
-import astor, ast
+import astor
+import ast
 import inspect
+
 
 class MutantKiller():
     # Kill given survived mutant
     # TODO: task가 모든 것을 담고 있게 만들기
     def __init__(self, task: Task, mutant: Context, test_suite: TestSuite, retry_count=10):
-        assert mutant.status == Status.SURVIVED
+        #assert mutant.status == Status.SURVIVED
 
         self.task = task
         self.mutant = mutant
@@ -29,14 +31,14 @@ class MutantKiller():
         solve_ast = self.task.ast_node['solve']
         branch_tree = self.task.branch_tree
         self.target_function = FunctionDef(solve_ast, branch_tree)
+        self.mutated_function = FunctionDef(self.mutant.ast_node, branch_tree)
 
-    # for test calculating fitness
-    def generate_sbst_inputs(self):
-        fitness_calculator = FitnessCalculator(self.target_function, self.mutant.branch_id)
+    def generate_sbst_input(self):
+        fitness_calculator = FitnessCalculator(
+            self.target_function, self.mutant.branch_id)
 
-        print(astor.to_source(self.target_function.node))
-
-        searcher = AVM(fitness_calculator, self.retry_count)
+        searcher = AVM(fitness_calculator, input_parameters=self.task.input_parameters,
+                       constraints=self.task.constraints)
 
         minimised_args, fitness_value = searcher.minimise()
 
@@ -45,6 +47,60 @@ class MutantKiller():
 
         else:
             return None
+
+    def generate_sbst_inputs(self, count=100):
+        inputs = []
+        for i in range(count):
+            args = self.generate_sbst_input()
+            if args:
+                inputs.append(args)
+
+        return inputs
+
+    def generate_mutation_sbst_input(self):
+        fitness_calculator = MutationFitnessCalculator(
+            self.mutated_function, self.mutant.branch_id)
+
+        # print(astor.to_source(self.mutated_function.node))
+
+        searcher = AVM(fitness_calculator, input_parameters=self.task.input_parameters,
+                       constraints=self.task.constraints)
+
+        minimised_args, fitness_value = searcher.minimise()
+
+        if fitness_value == 0:
+            return minimised_args
+
+        else:
+            return None
+
+    def generate_mutation_sbst_inputs(self, count=100):
+        inputs = []
+        for i in range(count):
+            args = self.generate_mutation_sbst_input()
+            if args:
+                inputs.append(args)
+
+        return inputs
+
+    def generate_new_test_suite(self, raw_inputs):
+        inputs = []  # with parameter id
+
+        for args in raw_inputs:
+            input = {}
+            for index, id in enumerate(self.task.input_parameters.keys()):
+                input[id] = args[index]
+
+            if self.task.convert_input_parameters_to_test:
+                input = self.task.convert_input_parameters_to_test(input)
+            inputs.append(input)
+
+        new_test_suite = TestSuite(
+            self.task.ast_node['solve'], inputs, self.task.ast_node['compare'])
+
+        print(new_test_suite.run(self.mutant.ast_node))
+        return new_test_suite
+
 
 class MutationRunner():
     def __init__(self, task: Task):
@@ -56,6 +112,7 @@ class MutationRunner():
         self.target_function = ast_utils.get_solve_function(target_file)
         self.task.ast_node['solve'] = self.target_function
         self.compare_function = ast_utils.get_compare_function(target_file)
+        self.task.ast_node['compare'] = self.compare_function
 
         self.mutations = []
         self.branch_tree = None
@@ -72,7 +129,7 @@ class MutationRunner():
         inputs = self.task.generate_tests()
 
         self.test_suite = TestSuite(self.target_function,
-                               inputs, self.compare_function)
+                                    inputs, self.compare_function)
 
     def execute_mutations(self):
         for mutation in self.mutations:
@@ -91,4 +148,3 @@ class MutationRunner():
     def print_all_mutants(self, verbose=False):
         for mutation in self.mutations:
             mutation.print(verbose)
-

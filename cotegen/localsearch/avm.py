@@ -5,17 +5,17 @@ import logging
 
 
 class AVM():
-    def __init__(self, fitness_calculator, retry_count=100, int_min=0, int_max=3000):
+    def __init__(self, fitness_calculator, input_parameters, retry_count=10, constraints=None):
         self.fitness = fitness_calculator
         self.retry_count = retry_count
 
-        self.int_min = int_min
-        self.int_max = int_max
+        self.input_parameters = input_parameters
+        self.constraints = constraints
 
-    def _generate_random_integers(self, count):
+    def _generate_random_integers(self):
         args = []
-        for i in range(count):
-            integer = random.randint(self.int_min, self.int_max)
+        for id, value in self.input_parameters.items():
+            integer = value.get_random()
             args.append(integer)
 
         return args
@@ -26,10 +26,34 @@ class AVM():
 
         return self.fitness.calculate(new_args)
 
+    def violates_constraints(self, args, x, index):
+        parameter = list(self.input_parameters.values())[index]
+
+        if not parameter.is_valid(x):
+            return True
+
+        if not self.constraints:
+            return False
+
+        x_id = list(self.input_parameters.keys())[index]
+        for constraint in self.constraints:
+            for index, id in enumerate(self.input_parameters.keys()):
+                test = {
+                    x_id: x,
+                    id: args[index]
+                }
+                if constraint.is_defined(test):
+                    if not constraint.is_valid(test):
+                        return True
+    
+        return False
+
     def search_on_one_argument(self, args, index):
         fitness = self.fitness.calculate(args)
 
         x = args[index]
+        if self.violates_constraints(args, x, index):
+            return args, 10000
 
         while fitness > 0:
             new_args = args[:]
@@ -49,6 +73,8 @@ class AVM():
                 x = x + k
                 k = k * 2
 
+                if self.violates_constraints(args, x, index):
+                    return args, 10000
                 fitness = self.calculate_fitness(args, index, x)
 
         args[index] = x
@@ -72,8 +98,7 @@ class AVM():
         minimised_args = []
         fitness = 10000
         for i in range(self.retry_count):
-            initial_args = self._generate_random_integers(
-                self.fitness.get_args_count())
+            initial_args = self._generate_random_integers()
 
             minimised_args, fitness = self.do_avm(initial_args)
             if fitness == 0:

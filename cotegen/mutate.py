@@ -1,4 +1,6 @@
 import copy
+import ast
+import astor
 
 from .context import Context
 from .branch_tree import BranchTree, BranchNode
@@ -64,7 +66,6 @@ def mutate_number(number):
     mutants = [ast_utils.increment(number), ast_utils.decrement(number)]
 
     return mutants
-
 
 class Mutator(ast_utils.TreeWalk):
     def __init__(self, target_function_AST):
@@ -137,6 +138,9 @@ class Mutator(ast_utils.TreeWalk):
     def print_mutations(self):
         for mutation in self.mutations:
             mutation.print(verbose=True)
+    
+    def is_predicate_test(self):
+        return self.in_predicate_test and (isinstance(self.parent, ast.If) or isinstance(self.parent, ast.While))
 
     def mutate_current_node(self, mutate_func):
         mutations = []
@@ -144,10 +148,15 @@ class Mutator(ast_utils.TreeWalk):
         original = self.cur_node
         mutants = mutate_func(original)
         for mutant in mutants:
+            if self.is_predicate_test():
+                mutant = self._to_trace_call(mutant)
+                
             self.replace(mutant)
             mutation = Context(copy.deepcopy(self.target))
             mutation.is_mutant_in_predicate = self.in_predicate_test
             mutation.branch_id = self._get_branch()
+
+
             mutations.append(mutation)
 
             self.replace(original)
@@ -205,3 +214,124 @@ class Mutator(ast_utils.TreeWalk):
         branch_type = not (len(self.false_branches_stack) > 0 and self.false_branches_stack[-1] == self.cur_branch_num)
 
         return (branch_num, branch_type)
+
+    def _inject_trace_hook(self, compare_node, branch_id):
+        op = ''
+        lhs = ''
+        rhs = ''
+        f_call = ''
+
+        if isinstance(compare_node, ast.Call) and compare_node.func.value.id == 'trace':
+            return compare_node
+
+        if isinstance(compare_node, ast.BoolOp):
+            lhs = astor.to_source(compare_node.values[0]).rstrip()
+            rhs = astor.to_source(compare_node.values[1]).rstrip()
+            # TODO: handle <3 values in boolop?
+
+            if isinstance(compare_node.op, ast.And):
+                op = 'bool_and'
+            elif isinstance(compare_node.op, ast.Or):
+                op = 'bool_or'
+
+            f_call = 'trace.{fname}({branch_id}, {lhs}, {rhs})'.format(
+                fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)
+
+            f_call_node = ast.parse(f_call, '', 'eval').body
+
+            f_call_node.args[1] = self._inject_trace_hook(
+                f_call_node.args[1], None)
+            f_call_node.args[2] = self._inject_trace_hook(
+                f_call_node.args[2], None)
+
+            return f_call_node
+
+        elif not hasattr(compare_node, 'left') or not hasattr(compare_node, 'comparators'):
+            op = 'is_true'
+            arg = astor.to_source(compare_node).rstrip()
+
+            f_call = 'trace.{fname}({branch_id}, {arg})'.format(
+                fname=op, branch_id=branch_id, arg=arg)
+
+        else:
+            lhs = astor.to_source(compare_node.left).rstrip()
+            rhs = astor.to_source(compare_node.comparators[0]).rstrip()
+
+            if isinstance(compare_node.ops[0], ast.Gt):
+                op = 'greater_than'
+            elif isinstance(compare_node.ops[0], ast.GtE):
+                op = 'greater_than_or_equals'
+            elif isinstance(compare_node.ops[0], ast.Lt):
+                op = 'less_than'
+            elif isinstance(compare_node.ops[0], ast.LtE):
+                op = 'less_than_or_equals'
+            elif isinstance(compare_node.ops[0], ast.Eq):
+                op = 'equals'
+            elif isinstance(compare_node.ops[0], ast.NotEq):
+                op = 'not_equals'
+            else:
+                return compare_node
+
+            f_call = 'trace.{fname}({branch_id}, {lhs}, {rhs})'.format(
+                fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)
+
+        f_call_node = ast.parse(f_call, '', 'eval').body
+
+        return f_call_node
+
+    def _to_trace_call(self, compare_node):
+        op = ''
+        lhs = ''
+        rhs = ''
+        f_call = ''
+        branch_id = self.cur_branch_num
+
+        if isinstance(compare_node, ast.BoolOp):
+            lhs = astor.to_source(compare_node.values[0]).rstrip()
+            rhs = astor.to_source(compare_node.values[1]).rstrip()
+            # TODO: handle <3 values in boolop?
+
+            if isinstance(compare_node.op, ast.And):
+                op = 'mutated_and'
+            elif isinstance(compare_node.op, ast.Or):
+                op = 'mutated_or'
+
+            f_call = 'trace.{fname}({branch_id}, {lhs}, {rhs})'.format(
+                fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)
+
+            f_call_node = ast.parse(f_call, '', 'eval').body
+
+            f_call_node.args[1] = self._inject_trace_hook(
+                f_call_node.args[1], None)
+            f_call_node.args[2] = self._inject_trace_hook(
+                f_call_node.args[2], None)
+
+            return f_call_node
+
+        if not isinstance(compare_node, ast.Compare):
+            return compare_node
+
+        lhs = astor.to_source(compare_node.left).rstrip()
+        rhs = astor.to_source(compare_node.comparators[0]).rstrip()
+
+        if isinstance(compare_node.ops[0], ast.Gt):
+            op = 'mutated_greater_than'
+        elif isinstance(compare_node.ops[0], ast.GtE):
+            op = 'mutated_greater_than_or_equals'
+        elif isinstance(compare_node.ops[0], ast.Lt):
+            op = 'mutated_less_than'
+        elif isinstance(compare_node.ops[0], ast.LtE):
+            op = 'mutated_less_than_or_equals'
+        elif isinstance(compare_node.ops[0], ast.Eq):
+            op = 'mutated_equals'
+        elif isinstance(compare_node.ops[0], ast.NotEq):
+            op = 'mutated_not_equals'
+        else:
+            return compare_node
+
+        f_call = 'trace.{fname}({branch_id}, {lhs}, {rhs})'.format(
+            fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)
+
+        f_call_node = ast.parse(f_call, '', 'eval').body
+
+        return f_call_node
