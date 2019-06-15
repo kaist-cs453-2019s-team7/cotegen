@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from .mutate import Mutator
+from .mutation import Mutator
 from .task import Task
 from .context import Context, Status
 from .test import TestSuite

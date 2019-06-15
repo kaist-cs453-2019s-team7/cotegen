@@ -2,10 +2,10 @@ import copy
 import ast
 import astor
 
-from .context import Context
-from .branch_tree import BranchTree, BranchNode
+from ..context import Context
+from ..branch_tree import BranchTree, BranchNode
 
-from cotegen.mutation_ops import compare_mutation, and_or_mutation, operator_mutation, keyword_mutation
+from .operators import compare_mutation, and_or_mutation, operator_mutation, keyword_mutation
 import cotegen.ast_utils as ast_utils
 
 
@@ -67,6 +67,7 @@ def mutate_number(number):
 
     return mutants
 
+
 class Mutator(ast_utils.TreeWalk):
     def __init__(self, target_function_AST):
         ast_utils.TreeWalk.__init__(self)
@@ -80,7 +81,6 @@ class Mutator(ast_utils.TreeWalk):
         self.false_branches_stack = []
 
         self.in_predicate_test = False
-
 
     def apply_mutations(self):
         ast_utils.TreeWalk.walk(self, self.target)
@@ -101,7 +101,7 @@ class Mutator(ast_utils.TreeWalk):
             return
 
         self.mutations.extend(self.mutate_current_node(mutate_and_or))
-    
+
     def post_BoolOp(self):
         self.in_predicate_test = False
 
@@ -138,7 +138,7 @@ class Mutator(ast_utils.TreeWalk):
     def print_mutations(self):
         for mutation in self.mutations:
             mutation.print(verbose=True)
-    
+
     def is_predicate_test(self):
         return self.in_predicate_test and (isinstance(self.parent, ast.If) or isinstance(self.parent, ast.While))
 
@@ -150,12 +150,11 @@ class Mutator(ast_utils.TreeWalk):
         for mutant in mutants:
             if self.is_predicate_test():
                 mutant = self._to_trace_call(mutant)
-                
+
             self.replace(mutant)
             mutation = Context(copy.deepcopy(self.target))
             mutation.is_mutant_in_predicate = self.in_predicate_test
             mutation.branch_id = self._get_branch()
-
 
             mutations.append(mutation)
 
@@ -205,13 +204,13 @@ class Mutator(ast_utils.TreeWalk):
 
         self.predicates_stack.append((true_branch_node, false_branch_node))
 
-        
     def _post_Conditional_statement(self):
         self.predicates_stack.pop()
 
     def _get_branch(self):
         branch_num = self.cur_branch_num
-        branch_type = not (len(self.false_branches_stack) > 0 and self.false_branches_stack[-1] == self.cur_branch_num)
+        branch_type = not (len(self.false_branches_stack) >
+                           0 and self.false_branches_stack[-1] == self.cur_branch_num)
 
         return (branch_num, branch_type)
 
