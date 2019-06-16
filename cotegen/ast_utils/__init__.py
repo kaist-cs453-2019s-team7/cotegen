@@ -1,8 +1,10 @@
 import astor
 import ast
 
+import inspect
+import textwrap
+
 from .tree_walk import TreeWalk
-from .parse_file import find_assign, find_function, get_solve_function, get_compare_function, get_input_parameters, get_convert_function
 
 
 ast_string = {
@@ -53,6 +55,18 @@ def to_ast_node(op_string):
     for ast_node, string in ast_string.items():
         if op_string == string:
             return ast_node()
+
+
+def get_function_object(ast_node, function_name):
+    namespace = {}
+    exec(ast_utils.ast_to_executable(solve_ast), namespace)
+    return namespace[function_name]
+
+
+def function_to_ast_node(function):
+    code = textwrap.dedent(inspect.getsource(function))
+    module = ast.parse(code)
+    return list(astor.iter_node(module))[0][0][0]
 
 
 def ast_to_executable(ast_expr):

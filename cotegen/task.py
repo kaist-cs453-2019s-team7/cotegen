@@ -1,6 +1,8 @@
 import os
 
 from .random import RandomGenerator
+from .run import MutationGenerator, MutantKiller
+from .test import TestSuite
 from .exceptions import CotegenTaskConstraintError
 
 
@@ -9,11 +11,6 @@ class Task:
     input_parameters = {}
     output_type = None
     constraints = []
-
-    branch_tree = None
-    ast_node = {
-        'solve': None,
-    }
 
     @classmethod
     def solve(cls, **kwargs):
@@ -37,8 +34,37 @@ class Task:
     def generate_random_tests(cls):
         tests = RandomGenerator.generate_inputs(cls.input_parameters, cls.constraints, cls.num_test_tries)
 
-        return list(map(cls.convert_input_parameters_to_test,
+        inputs = list(map(cls.convert_input_parameters_to_test,
                          filter(cls.check_input_constraint, tests)))
+        
+        return TestSuite(cls.solve, cls.compare, inputs)
+
+    @classmethod
+    def mutate(cls, test_suite):
+        generator = MutationGenerator(cls.solve, cls.input_parameters)
+        
+        return generator.execute_mutations(test_suite)
+
+    @classmethod
+    def kill_survived_mutants(cls, mutation_fitness=False):
+        survived = []
+
+        test_suite = cls.generate_random_tests()
+        mutations = cls.mutate(test_suite)
+
+        for survivor in mutations: # TODO: only survivors
+            mutantKiller = MutantKiller(cls, survivor, test_suite)
+
+            inputs = mutantKiller.generate_sbst_inputs()
+
+            if mutation_fitness:
+                inputs.extend(mutantKiller.generate_mutation_sbst_inputs())
+
+            test_suite.add(mutantKiller.generate_new_test_suite(inputs))
+        
+        return test_suite, mutations
+
+
 
     def convert_input_to_string(test: dict) -> str:
         raise NotImplementedError
@@ -46,19 +72,19 @@ class Task:
     def convert_output_to_string(output) -> str:
         return str(output)
 
-    @classmethod
-    def generate_test_files(cls, target_directory=None):
-        # TODO: show progressbar?
-        if target_directory is None:
-            target_directory = os.getcwd()
-        if any(os.scandir(target_directory)):
-            raise FileExistsError("target_directory not empty")
+    # @classmethod
+    # def generate_test_files(cls, target_directory=None):
+    #     # TODO: show progressbar?
+    #     if target_directory is None:
+    #         target_directory = os.getcwd()
+    #     if any(os.scandir(target_directory)):
+    #         raise FileExistsError("target_directory not empty")
 
-        tests = cls.generate_random_tests()
-        for idx, test in enumerate(tests):
-            with open(os.path.join(target_directory, "%03d.in" % idx), "w") as f:
-                f.write(cls.convert_input_to_string(**test))
-            with open(os.path.join(target_directory, "%03d.ans" % idx), "w") as f:
-                f.write(cls.convert_output_to_string(cls.solve(**test)))
+    #     tests = cls.generate_random_tests()
+    #     for idx, test in enumerate(tests):
+    #         with open(os.path.join(target_directory, "%03d.in" % idx), "w") as f:
+    #             f.write(cls.convert_input_to_string(**test))
+    #         with open(os.path.join(target_directory, "%03d.ans" % idx), "w") as f:
+    #             f.write(cls.convert_output_to_string(cls.solve(**test)))
 
-        print("Generated %d tests" % len(tests))
+    #     print("Generated %d tests" % len(tests))

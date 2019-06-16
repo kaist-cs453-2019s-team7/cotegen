@@ -22,16 +22,14 @@ def make_function_call(function_name, args):
 
 
 class TestSuite():
-    def __init__(self, original_function, inputs, compare):
+    def __init__(self, solve, compare, inputs):
         self.tests = []
-        self.compare_exec = ast_utils.ast_to_executable(compare)
+        self.compare = compare
+        self.solve = solve
         self.failed_tests = []
 
-        original_function_exec = ast_utils.ast_to_executable(original_function)
-
-        exec(original_function_exec, locals(), globals())
         for input in inputs:
-            jury_answer = output = self.solve(input)
+            jury_answer = output = self.solve(**input)
 
             self.tests.append((input, jury_answer))
 
@@ -43,12 +41,11 @@ class TestSuite():
         target_function_exec = ast_utils.ast_to_executable(target_function)
         trace = Trace() # dummy trace object: TODO find better way
         exec(target_function_exec, locals(), globals())
-        exec(self.compare_exec, locals(), globals())
 
         result = 'SUCCESS'  # TODO: use Enum
         killed_by = []
         for input, jury_answer in self.tests:
-            output = self.solve(input)
+            output = self.solve_call(input)
 
             if self.compare(output, jury_answer) == False:
                 killed_by.append((input, jury_answer))
@@ -74,7 +71,7 @@ class TestSuite():
         self.tests = new_tests
 
     @staticmethod
-    def solve(input):
+    def solve_call(input):
         solve_call = make_function_call('solve', input)
 
         try:
@@ -87,12 +84,3 @@ class TestSuite():
             return None
 
         # TODO: handle invalid mutants (generating above Exceptions)
-
-    @staticmethod
-    def compare(user_answer, jury_answer):
-        comparators = {
-            'user_answer': user_answer,
-            'jury_answer': jury_answer
-        }
-        compare_call = make_function_call('compare', comparators)
-        return eval(compare_call)

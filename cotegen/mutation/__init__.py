@@ -3,7 +3,6 @@ import ast
 import astor
 
 from ..context import Context
-from ..branch_tree import BranchTree, BranchNode
 
 from .operators import compare_mutation, and_or_mutation, operator_mutation, keyword_mutation
 import cotegen.ast_utils as ast_utils
@@ -75,8 +74,6 @@ class Mutator(ast_utils.TreeWalk):
         self.target = target_function_AST
         self.in_context_should_not_mutate = False
 
-        self.predicates_stack = []
-        self.branch_tree = BranchTree()
         self.cur_branch_num = 0
         self.false_branches_stack = []
 
@@ -165,14 +162,8 @@ class Mutator(ast_utils.TreeWalk):
     def pre_If(self):
         self._pre_Conditional_statement()
 
-    def post_If(self):
-        self._post_Conditional_statement()
-
     def pre_While(self):
         self._pre_Conditional_statement()
-
-    def post_While(self):
-        self._post_Conditional_statement()
 
     def pre_orelse_name(self):
         if len(self.cur_node) > 0 and hasattr(self.cur_node[0], 'flag') and self.cur_node[0].flag == True:
@@ -188,24 +179,6 @@ class Mutator(ast_utils.TreeWalk):
 
         if len(self.cur_node.orelse) > 0:
             self.cur_node.orelse[0].flag = True
-
-        parent = self.branch_tree.root
-
-        if len(self.predicates_stack) > 0:
-            true_node, false_node = self.predicates_stack[-1]
-
-            if len(self.false_branches_stack) > 0 and self.false_branches_stack[-1] == self.cur_branch_num - 1:
-                parent = false_node
-
-        true_branch_node = BranchNode(
-            num=self.cur_branch_num, type=True, ast_node=self.cur_node, parent=parent)
-        false_branch_node = BranchNode(
-            num=self.cur_branch_num, type=False, ast_node=self.cur_node, parent=parent)
-
-        self.predicates_stack.append((true_branch_node, false_branch_node))
-
-    def _post_Conditional_statement(self):
-        self.predicates_stack.pop()
 
     def _get_branch(self):
         branch_num = self.cur_branch_num
