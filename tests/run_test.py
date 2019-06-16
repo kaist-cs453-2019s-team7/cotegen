@@ -15,7 +15,7 @@ target_files = [(join(path, f), f[:-3]) for f in listdir(path) if isfile(join(pa
 
 def test_mutate():
     for target_file, file_name in target_files:
-        task = importlib.machinery.SourceFileLoader('', target_file).load_module().__dict__['CF' + file_name]
+        task = importlib.machinery.SourceFileLoader('', target_file).load_module().__dict__['CF' + file_name if file_name[:3] != 'BOJ' else file_name]
 
         mutation_runner = MutationRunner(task)
         print(target_file)
