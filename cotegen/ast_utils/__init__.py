@@ -37,10 +37,9 @@ def increment(number):
 def decrement(number):
     return ast.copy_location(ast.Num(number.n - 1), number)
 
-def abs(number):
-    abs_call = 'abs({number})'.format(number=number.n)
-    abs_call_node = ast.parse(abs_call, '', 'eval').body
-    return ast.copy_location(abs_call_node, number)
+
+def minus(number):
+    return ast.copy_location(ast.Num(-1 * number.n), number)
 
 
 def to_string(op):
