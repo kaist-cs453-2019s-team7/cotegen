@@ -47,11 +47,25 @@ class AVM():
                 if constraint.is_defined(test):
                     if not constraint.is_valid(test):
                         return True
-    
+
         return False
 
     def values_to_args(self, args):
         return dict(zip(self.input_parameters.keys(), args))
+
+    def increment(self, arg_value, k):
+        if isinstance(arg_value, int):
+            return arg_value + k
+
+        elif isinstance(arg_value, list):
+            return list(map(lambda x: x + k, arg_value))
+
+    def decrement(self, arg_value, k):
+        if isinstance(arg_value, int):
+            return arg_value - k
+
+        elif isinstance(arg_value, list):
+            return list(map(lambda x: x - k, arg_value))
 
     def search_on_one_argument(self, args, index):
         fitness = self.fitness.calculate(args)
@@ -63,8 +77,8 @@ class AVM():
             return args, 10000
 
         while fitness > 0:
-            fitness_left = self.calculate_fitness(args_values, index, x - 1)
-            fitness_right = self.calculate_fitness(args_values, index, x + 1)
+            fitness_left = self.calculate_fitness(args_values, index, self.decrement(x, 1))
+            fitness_right = self.calculate_fitness(args_values, index, self.increment(x, 1))
 
             if fitness <= fitness_left and fitness <= fitness_right:
                 args_values[index] = x
@@ -72,8 +86,8 @@ class AVM():
 
             k = -1 if fitness_left < fitness_right else 1
 
-            while self.calculate_fitness(args_values, index, x + k) < fitness:
-                x = x + k
+            while self.calculate_fitness(args_values, index, self.increment(x, k)) < fitness:
+                x = self.increment(x, k)
                 k = k * 2
 
                 if self.violates_constraints(args_values, x, index):
@@ -106,5 +120,5 @@ class AVM():
             minimised_args, fitness = self.do_avm(initial_args)
             if fitness == 0:
                 return minimised_args, fitness
-        
+
         return minimised_args, fitness
