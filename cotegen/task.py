@@ -9,6 +9,7 @@ from .exceptions import CotegenTaskConstraintError
 
 from .ast_utils import print_ast
 
+import time
 
 class Task:
     num_test_tries = 10
@@ -20,8 +21,8 @@ class Task:
     def solve(cls, **kwargs):
         raise NotImplementedError
 
-    @classmethod
-    def compare(cls, user_answer, jury_answer) -> bool:
+    @staticmethod
+    def compare(user_answer, jury_answer) -> bool:
         return user_answer == jury_answer
 
     @classmethod
@@ -73,9 +74,11 @@ class Task:
         
         return test_suite, mutations
 
-    def convert_input_to_string(test: dict) -> str:
+    @staticmethod
+    def convert_input_to_string(**kwargs) -> str:
         raise NotImplementedError
 
+    @staticmethod
     def convert_output_to_string(output) -> str:
         return str(output)
 
@@ -84,7 +87,15 @@ class Task:
         # TODO: show progressbar?
         if target_directory is None:
             target_directory = os.getcwd()
-        target_directory = os.path.join(target_directory, "data")
+
+        try:
+            os.mkdir(target_directory)
+        except FileExistsError:
+            pass
+
+        target_directory = os.path.join(target_directory, "data%s" % int(time.time()))
+        print(target_directory)
+
         try:
             os.mkdir(target_directory)
         except FileExistsError:
@@ -92,7 +103,13 @@ class Task:
 
         test_suite = cls.generate_random_tests()
         tests = test_suite.tests[:]
+        num_random_tests = len(tests)
+
         mutations = cls.mutate(test_suite)
+        print_later_for_random = ('Only random -> Killed: {}, Survived: {}'.format(
+            sum(m.status == Status.KILLED for m in mutations), sum(m.status == Status.SURVIVED for m in mutations)))
+        print(print_later_for_random)
+
         for survivor in list(filter(lambda m: m.status ==
                                               Status.SURVIVED, mutations)):
             mutantKiller = MutantKiller(cls, survivor, test_suite)
@@ -102,11 +119,16 @@ class Task:
             inputs.extend(mutantKiller.generate_mutation_sbst_inputs())
             test_suite.add(mutantKiller.generate_new_test_suite(inputs))
 
+            mutantKiller.mutated_function.print()
+
         killing_indices = set()
-        mutants_killed = []
+        mutants_killed = list(filter(lambda m: m.status == Status.KILLED, mutations))
         mutants_survived = []
-        for mutant in mutations:
+        for mutcnt, mutant in enumerate(filter(lambda m: m.status ==
+                                              Status.SURVIVED, mutations)):
+            print("start running %d (%s)" % (mutcnt, mutant))
             test_result, _, indices = test_suite.run(mutant.ast_node)
+            print("end running %d (%s) -> %s" % (mutcnt, mutant, test_result))
             if test_result == 'SUCCESS':
                 mutants_survived.append(mutant)
             elif test_result == 'FAIL':
@@ -116,11 +138,15 @@ class Task:
         tests.extend(test_suite.tests[i] for i in killing_indices)
 
         for idx, test in enumerate(tests):
-            with open(os.path.join(target_directory, "%03d.in" % idx), "w") as f:
+            key = "random" if idx < num_random_tests else "sbst"
+            with open(os.path.join(target_directory, "%s-%03d.in" % (key, idx)), "w") as f:
                 f.write(cls.convert_input_to_string(**test[0]))
-            with open(os.path.join(target_directory, "%03d.ans" % idx), "w") as f:
+            with open(os.path.join(target_directory, "%s-%03d.out" % (key, idx)), "w") as f:
                 f.write(cls.convert_output_to_string(test[1]))
 
+        print("-------------")
+        print(target_directory)
         print("Generated %d tests" % len(tests))
-        print('Killed: {}, Survived: {}'.format(
+        print(print_later_for_random)
+        print('with SBST: Killed: {}, Survived: {}'.format(
             len(mutants_killed), len(mutants_survived)))

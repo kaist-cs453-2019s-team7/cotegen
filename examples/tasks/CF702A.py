@@ -5,22 +5,27 @@ import cotegen
 from typing import List
 
 
-class CF946A(cotegen.Task):
+class CF702A(cotegen.Task):
     input_parameters = \
         {
-            'a': cotegen.types.IntegerSequence(1, 100, -100, 100),
+            'a': cotegen.types.IntegerSequence(1, 100000, 1, 10**9)
         }
 
     output_type = int
 
     def solve(a: List[int]) -> int:
-        ans = 0
-        for x in a:
-            if x < 0:
-                ans -= x
+        x = 0
+        y = 0
+        m = 0
+        for i in a:
+            if i > y:
+                m = m + 1
             else:
-                ans += x
-        return ans
+                m = 1
+            if x < m:
+                x = m
+            y = i
+        return x
 
     @staticmethod
     def compare(user_answer: int, jury_answer: int) -> bool:
@@ -31,7 +36,6 @@ class CF946A(cotegen.Task):
         return ("%d\n" % len(a)) + " ".join(map(str, a)) + "\n"
 
 
-
 if __name__ == '__main__':
     import os
-    CF946A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF946A"))
+    CF702A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF702A"))

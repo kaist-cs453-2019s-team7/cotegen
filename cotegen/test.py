@@ -47,13 +47,19 @@ class TestSuite():
         killed_idx = []
         for idx, pair in enumerate(self.tests):
             input, jury_answer = pair
-            output = self.solve_call(input)
+            try:
+                output = self.solve_call(input)
+            except (ValueError, KeyError):
+                continue
 
             if self.compare(output, jury_answer) == False:
                 killed_by.append((input, jury_answer))
                 killed_idx.append(idx)
                 if result == 'SUCCESS':
                     result = 'FAIL'
+
+            if len(killed_by) > 3:
+                break
 
         self.failed_tests.extend(killed_by)
         return result, killed_by, killed_idx

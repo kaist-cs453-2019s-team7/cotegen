@@ -28,12 +28,15 @@ class CF937A(cotegen.Task):
                 ans += 1
         return ans
 
+    @staticmethod
     def compare(user_answer: int, jury_answer: int) -> bool:
         return user_answer == jury_answer
 
+    @staticmethod
+    def convert_input_to_string(a: List[int]):
+        return "%d\n%s\n" % (len(a), " ".join(map(str, a)))
+
 
 if __name__ == '__main__':
-    tests = CF937A.generate_random_tests()
-    print(len(tests))
-    for test in tests:
-        print(test)
+    import os
+    CF937A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF937A"))
