@@ -80,32 +80,33 @@ class Mutator(ast_utils.TreeWalk):
         self.in_context_should_not_mutate = False
 
         self.cur_branch_num = 0
+        self.prev_branch_id = None
         self.false_branches_stack = []
 
-        self.in_predicate_test = False
+        self.is_in_bool_expr = False
 
     def apply_mutations(self):
         ast_utils.TreeWalk.walk(self, self.target)
 
     def pre_Compare(self):
-        self.in_predicate_test = True
+        self.is_in_bool_expr = True
         if self.in_context_should_not_mutate:
             return
 
         self.mutations.extend(self.mutate_current_node(mutate_compare))
 
     def post_Compare(self):
-        self.in_predicate_test = False
+        self.is_in_bool_expr = False
 
     def pre_BoolOp(self):
-        self.in_predicate_test = True
+        self.is_in_bool_expr = True
         if self.in_context_should_not_mutate:
             return
 
         self.mutations.extend(self.mutate_current_node(mutate_and_or))
 
     def post_BoolOp(self):
-        self.in_predicate_test = False
+        self.is_in_bool_expr = False
 
     def pre_BinOp(self):
         if self.in_context_should_not_mutate:
@@ -142,7 +143,7 @@ class Mutator(ast_utils.TreeWalk):
             mutation.print(verbose=True)
 
     def is_predicate_test(self):
-        return self.in_predicate_test and (isinstance(self.parent, ast.If) or isinstance(self.parent, ast.While))
+        return self.is_in_bool_expr and (isinstance(self.parent, ast.If) or isinstance(self.parent, ast.While))
 
     def mutate_current_node(self, mutate_func):
         mutations = []
@@ -156,7 +157,7 @@ class Mutator(ast_utils.TreeWalk):
 
             self.replace(mutant)
             mutation = Context(copy.deepcopy(self.target))
-            mutation.is_mutant_in_predicate = self.in_predicate_test
+            mutation.is_mutant_in_predicate = self.is_predicate_test()
             mutation.branch_id = self._get_branch()
 
             mutations.append(mutation)
@@ -181,12 +182,16 @@ class Mutator(ast_utils.TreeWalk):
             self.false_branches_stack.pop()
 
     def _pre_Conditional_statement(self):
+        self.prev_branch_id = self._get_branch()
         self.cur_branch_num += 1
 
         if len(self.cur_node.orelse) > 0:
             self.cur_node.orelse[0].flag = True
 
     def _get_branch(self):
+        if self.is_predicate_test():
+            return self.prev_branch_id
+
         branch_num = self.cur_branch_num
         branch_type = not (len(self.false_branches_stack) >
                            0 and self.false_branches_stack[-1] == self.cur_branch_num)
