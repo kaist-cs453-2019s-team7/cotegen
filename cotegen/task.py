@@ -86,7 +86,7 @@ class Task:
         return str(output)
 
     @classmethod
-    def generate_test_files(cls, target_directory=None):
+    def generate_test_files(cls, target_directory=None, mutation_fitness=True):
         # TODO: show progressbar?
         if target_directory is None:
             target_directory = os.getcwd()
@@ -96,7 +96,7 @@ class Task:
         try:
             os.mkdir(target_directory)
         except FileExistsError:
-            pass
+            pass 
 
         target_directory = os.path.join(
             target_directory, "data%s" % int(time.time()))
@@ -131,11 +131,14 @@ class Task:
             mutantKiller.mutated_function.print()
 
         killing_indices = set()
+        killing_indices_sbst = set()
         mutants_killed = list(
             filter(lambda m: m.status == Status.KILLED, mutations))
         mutants_survived = []
-        cnt_sbst_mutants_killed, cnt_sbst_mutants_survived = len(
-            mutants_killed), 0
+        
+        sbst_mutants_killed, sbst_mutants_survived = \
+            mutants_killed[:], []
+        
         for mutcnt, mutant in enumerate(filter(lambda m: m.status ==
                                                Status.SURVIVED, mutations)):
             print("start running %d (%s)" % (mutcnt, mutant))
@@ -148,14 +151,18 @@ class Task:
                 killing_indices = killing_indices | set(indices[:3])
                 mutants_killed.append(mutant)
 
-            test_sbst_result, _, _ = test_suite_with_only_pure_sbst.run(
+            test_sbst_result, _, indices_sbst = test_suite_with_only_pure_sbst.run(
                 mutant.ast_node)
             if test_sbst_result == 'SUCCESS':
-                cnt_sbst_mutants_survived += 1
+                sbst_mutants_survived.append(mutant)
             elif test_sbst_result == 'FAIL':
-                cnt_sbst_mutants_killed += 1
+                killing_indices_sbst = killing_indices_sbst | set(indices_sbst[:3])
+                sbst_mutants_killed.append(mutant)
 
-        tests.extend(test_suite.tests[i] for i in killing_indices)
+        if mutation_fitness:
+            tests.extend(test_suite.tests[i] for i in killing_indices)
+        else:
+            tests.extend(test_suite_with_only_pure_sbst.tests[i] for i in killing_indices_sbst)
 
         for idx, test in enumerate(tests):
             key = "random" if idx < num_random_tests else "sbst"
@@ -169,6 +176,6 @@ class Task:
         print("Generated %d tests" % len(tests))
         print(print_later_for_random)
         print('SBST with branch fitness -> Killed: {}, Survived: {}'.format(
-            cnt_sbst_mutants_killed, cnt_sbst_mutants_survived))
+            len(sbst_mutants_killed), len(sbst_mutants_survived)))
         print('SBST with mutation fitness -> Killed: {}, Survived: {}'.format(
             len(mutants_killed), len(mutants_survived)))

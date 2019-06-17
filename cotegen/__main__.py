@@ -1,4 +1,5 @@
 import sys
+import os
 
 from cotegen.context import Status
 
@@ -12,7 +13,7 @@ def print_help():
     print(
         '       python -m cotegen run kill --filename <filename>')
     print(
-        '       python -m cotegen run kill --filename <filename> --mutation-fitness <true or false>')
+        '       python -m cotegen run kill --filename <filename> --save <directory path> --mutation-fitness <true or false>')
 
 
 def execute():
@@ -24,6 +25,7 @@ def execute():
     filename = None
     mutation_fitness = False
     show_survived = False
+    directory_path = None
 
     index = 3
     while index + 1 < len(sys.argv):
@@ -34,8 +36,11 @@ def execute():
         elif option == '-m' or option == '--mutation-fitness':
             mutation_fitness = True if sys.argv[index+1] == 'true' else False
 
-        elif option == '-s' or option == '--show-survived':
+        elif option == '--show-survived':
             show_survived = True if sys.argv[index+1] == 'true' else False
+
+        elif option == '-s' or option == '--save':
+            directory_path = sys.argv[index+1]
 
         else:
             print('unknown option: {}'.format(option))
@@ -74,6 +79,10 @@ def execute():
         return
 
     elif mode == 'kill':
+        if directory_path:
+            task.generate_test_files(os.path.join(directory_path, filename))
+            return
+
         mutants_killed = []
         mutants_survived = []
 
