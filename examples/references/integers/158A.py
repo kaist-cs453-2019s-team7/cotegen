@@ -7,8 +7,8 @@ from typing import List
 class CF158A(cotegen.Task):
     input_parameters = \
         {
-            'k': cotegen.types.Integer(1, 50),
-            'a': cotegen.types.NonIncreasingIntegerSequence(1, 100, 0, 100),
+            'k': cotegen.types.Integer(1, 5),
+            'a': cotegen.types.NonIncreasingIntegerSequence(5, 100, 0, 100),
         }
 
     output_type = int

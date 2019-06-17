@@ -21,7 +21,7 @@ if __name__ == "__main__":
                            Status.SURVIVED, mutations))
 
     count = 0
-    for survivor in mutations:
+    for survivor in survived:
         mutantKiller = MutantKiller(task, survivor, initial_test_suite)
 
         print('*********')

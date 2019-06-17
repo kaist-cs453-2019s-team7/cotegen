@@ -36,7 +36,7 @@ class IntegerSequence(Type):
         return random.randint(lower_bound, upper_bound)
 
     def get_random(self):
-        n = random_length(self.min_length, self.max_length)
+        n = self.random_length(self.min_length, self.max_length)
         return [random.randint(self.lower_bound, self.upper_bound) for _ in range(n)]
 
     def is_valid(self, value, test=None):

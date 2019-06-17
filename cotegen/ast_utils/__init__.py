@@ -1,6 +1,8 @@
 import astor
 import ast
 
+from typing import List, Tuple
+
 import inspect
 import textwrap
 
@@ -56,7 +58,7 @@ def to_ast_node(op_string):
 
 def get_function_object(ast_node, function_name):
     namespace = {}
-    exec(ast_utils.ast_to_executable(solve_ast), namespace)
+    exec(ast_to_executable(ast_node), globals(), namespace)
     return namespace[function_name]
 
 

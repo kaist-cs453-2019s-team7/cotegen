@@ -17,6 +17,7 @@ class FunctionDef():
 
         self.insert_hooks_on_predicates()
         self.exec = self._to_executable(self.node)
+        self.func = ast_utils.get_function_object(self.node, 'solve')
 
     def insert_hooks_on_predicates(self):
         walker = WalkPredicates()
@@ -36,9 +37,10 @@ class FunctionDef():
         source += 'trace)'
 
         return source
-    
+
     def print(self):
         ast_utils.print_ast(self.node)
+
 
 class WalkPredicates(ast_utils.TreeWalk):
     def __init__(self):

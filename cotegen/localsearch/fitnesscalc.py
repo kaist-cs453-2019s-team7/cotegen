@@ -3,6 +3,7 @@ from .trace import Trace
 from typing import List, Tuple
 
 import logging
+import copy
 
 
 def normalize(n):
@@ -34,7 +35,9 @@ class FitnessCalculator():
         exec(self.exec, locals(), globals())
 
         try:
-            eval(self.target_function.call(args))
+            trace_args = copy.deepcopy(args)
+            trace_args['trace'] = trace
+            self.target_function.func(**trace_args)
         except (AssertionError, ZeroDivisionError):
             # TODO: ZeroDivisionError is just to avoid the program to be terminated for BOJ2839
             return (10000, 0, 0, 0)

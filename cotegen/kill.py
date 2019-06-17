@@ -75,9 +75,7 @@ class MutantKiller():
         inputs = []  # with parameter id
 
         for args in raw_inputs:
-            input = {}
-            for index, id in enumerate(self.task.input_parameters.keys()):
-                input[id] = args[index]
+            input = args
 
             if self.task.convert_input_parameters_to_test:
                 input = self.task.convert_input_parameters_to_test(input)
