@@ -79,7 +79,7 @@ class Task:
 
     @staticmethod
     def convert_input_to_string(**kwargs) -> str:
-        raise NotImplementedError
+        return str(kwargs)
 
     @staticmethod
     def convert_output_to_string(output) -> str:
