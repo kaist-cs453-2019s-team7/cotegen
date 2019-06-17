@@ -35,6 +35,9 @@ class FunctionDef():
         source += 'trace)'
 
         return source
+    
+    def print(self):
+        ast_utils.print_ast(self.node)
 
 
 class NotInterceptableException(Exception):

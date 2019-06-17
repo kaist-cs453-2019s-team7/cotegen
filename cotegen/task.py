@@ -5,6 +5,8 @@ from .run import MutationGenerator, MutantKiller
 from .test import TestSuite
 from .exceptions import CotegenTaskConstraintError
 
+from .ast_utils import print_ast
+
 
 class Task:
     num_test_tries = 10
@@ -46,7 +48,7 @@ class Task:
         return generator.execute_mutations(test_suite)
 
     @classmethod
-    def kill_survived_mutants(cls, mutation_fitness=False):
+    def kill_survived_mutants(cls, mutation_fitness=False, verbose=False):
         survived = []
 
         test_suite = cls.generate_random_tests()
@@ -61,6 +63,10 @@ class Task:
                 inputs.extend(mutantKiller.generate_mutation_sbst_inputs())
 
             test_suite.add(mutantKiller.generate_new_test_suite(inputs))
+
+            if verbose:
+                print('*********')
+                mutantKiller.mutated_function.print()
         
         return test_suite, mutations
 
