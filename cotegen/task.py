@@ -2,6 +2,7 @@ import os
 
 from .random import RandomGenerator
 from .mutation import MutationGenerator
+from .context import Status
 from .kill import MutantKiller
 from .test import TestSuite
 from .exceptions import CotegenTaskConstraintError
@@ -55,7 +56,8 @@ class Task:
         test_suite = cls.generate_random_tests()
         mutations = cls.mutate(test_suite)
 
-        for survivor in mutations: # TODO: only survivors
+        for survivor in list(filter(lambda m: m.status ==
+                                    Status.SURVIVED, mutations)): 
             mutantKiller = MutantKiller(cls, survivor, test_suite)
 
             inputs = mutantKiller.generate_sbst_inputs()

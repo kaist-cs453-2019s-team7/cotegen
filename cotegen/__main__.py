@@ -83,12 +83,12 @@ def execute():
             mutation_fitness=mutation_fitness)
         new_test_suite.print()
 
-        for survivor in mutations:
-            test_result, _ = new_test_suite.run(survivor.ast_node)
+        for mutant in mutations:
+            test_result, _ = new_test_suite.run(mutant.ast_node)
             if test_result == 'SUCCESS':
-                mutants_survived.append(survivor)
+                mutants_survived.append(mutant)
             elif test_result == 'FAIL':
-                mutants_killed.append(survivor)
+                mutants_killed.append(mutant)
 
         print('Killed: {}, Survived: {}'.format(
             len(mutants_killed), len(mutants_survived)))
