@@ -10,6 +10,7 @@ from .exceptions import CotegenTaskConstraintError
 from .ast_utils import print_ast
 
 import time
+import copy
 
 class Task:
     num_test_tries = 10
@@ -102,6 +103,7 @@ class Task:
             pass
 
         test_suite = cls.generate_random_tests()
+        test_suite_with_only_pure_sbst = copy.deepcopy(test_suite)
         tests = test_suite.tests[:]
         num_random_tests = len(tests)
 
@@ -115,6 +117,7 @@ class Task:
             mutantKiller = MutantKiller(cls, survivor, test_suite)
 
             inputs = mutantKiller.generate_sbst_inputs()
+            test_suite_with_only_pure_sbst.add(mutantKiller.generate_new_test_suite(inputs))
 
             inputs.extend(mutantKiller.generate_mutation_sbst_inputs())
             test_suite.add(mutantKiller.generate_new_test_suite(inputs))
@@ -124,16 +127,24 @@ class Task:
         killing_indices = set()
         mutants_killed = list(filter(lambda m: m.status == Status.KILLED, mutations))
         mutants_survived = []
+        cnt_sbst_mutants_killed, cnt_sbst_mutants_survived = len(mutants_killed), 0
         for mutcnt, mutant in enumerate(filter(lambda m: m.status ==
                                               Status.SURVIVED, mutations)):
             print("start running %d (%s)" % (mutcnt, mutant))
             test_result, _, indices = test_suite.run(mutant.ast_node)
+
             print("end running %d (%s) -> %s" % (mutcnt, mutant, test_result))
             if test_result == 'SUCCESS':
                 mutants_survived.append(mutant)
             elif test_result == 'FAIL':
                 killing_indices = killing_indices | set(indices[:3])
                 mutants_killed.append(mutant)
+
+            test_sbst_result, _, _ = test_suite_with_only_pure_sbst.run(mutant.ast_node)
+            if test_sbst_result == 'SUCCESS':
+                cnt_sbst_mutants_survived += 1
+            elif test_sbst_result == 'FAIL':
+                cnt_sbst_mutants_killed += 1
 
         tests.extend(test_suite.tests[i] for i in killing_indices)
 
@@ -148,5 +159,7 @@ class Task:
         print(target_directory)
         print("Generated %d tests" % len(tests))
         print(print_later_for_random)
-        print('with SBST: Killed: {}, Survived: {}'.format(
+        print('SBST with branch fitness -> Killed: {}, Survived: {}'.format(
+            cnt_sbst_mutants_killed, cnt_sbst_mutants_survived))
+        print('SBST with mutation fitness -> Killed: {}, Survived: {}'.format(
             len(mutants_killed), len(mutants_survived)))
