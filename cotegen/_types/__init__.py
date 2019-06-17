@@ -9,4 +9,4 @@ class Type:
         return []
 
 from .integer import Integer
-from .integersequence import IntegerSequence, NonIncreasingIntegerSequence, FixedVariableLengthIntegerSequence
+from .integersequence import IntegerSequence, NonIncreasingIntegerSequence, FixedVariableLengthIntegerSequence, IntegerPermutation

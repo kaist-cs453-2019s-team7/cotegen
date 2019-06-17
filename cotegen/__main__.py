@@ -45,11 +45,9 @@ def execute():
         index = index + 2
 
     classname = filename
-    if filename[:3] != 'BOJ':
-        classname = 'CF' + filename
 
     task = importlib.machinery.SourceFileLoader(
-        '', 'examples/references/integers/{}.py'.format(filename)).load_module().__dict__[classname]
+        '', 'examples/tasks/{}.py'.format(filename)).load_module().__dict__[classname]
 
     if mode == 'random':
         initial_test_suite = task.generate_random_tests()
@@ -82,9 +80,10 @@ def execute():
         new_test_suite, mutations = task.kill_survived_mutants(
             mutation_fitness=mutation_fitness)
         new_test_suite.print()
+        print(len(new_test_suite.tests))
 
         for mutant in mutations:
-            test_result, _ = new_test_suite.run(mutant.ast_node)
+            test_result, _, _ = new_test_suite.run(mutant.ast_node)
             if test_result == 'SUCCESS':
                 mutants_survived.append(mutant)
             elif test_result == 'FAIL':

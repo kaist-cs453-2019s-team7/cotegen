@@ -115,3 +115,55 @@ class FixedVariableLengthIntegerSequence(IntegerSequence):
             return super(FixedVariableLengthIntegerSequence, self).is_valid(value)
         return type(value) is list and len(value) == test.get(self.length_var, -1) and \
                 all(self.lower_bound <= x <= self.upper_bound for x in value)
+
+
+class IntegerPermutation(IntegerSequence):
+    _NUM_RANDOM = 5
+    def __init__(self, min_length: int = 1, max_length: int = 100000):
+        if not(1 <= min_length <= max_length <= IntegerSequence._MAX_LENGTH):
+            raise CotegenTypeDeclarationError("not(1 <= min_length <= max_length <= _MAX_LENGTH)")
+        self.min_length = min_length
+        self.max_length = max_length
+
+    def random_length (self, min_length: int, max_length: int):
+        return random.randint(min_length, max_length)
+
+    def get_random(self):
+        n = self.random_length(self.min_length, self.max_length)
+        a = [i for i in range(n)]
+        random.shuffle(a)
+        return a
+
+    def is_valid(self, value, test=None):
+        return type(value) is list and self.min_length <= len(value) <= self.max_length and \
+                set(value) == set(range(len(value)))
+
+    def sample(self, test=None):
+        ret = []
+
+        for n in set(range(self.min_length, self.min_length + self._NUM_LENGTH_BOUNDARY + 1)) \
+                    | set(range(self.max_length - self._NUM_LENGTH_BOUNDARY, self.max_length + 1)):
+            if n <= 3 and [1, 1, 2, 6][n] <= self._NUM_SMALL_TESTS_BOUND:
+                ret.extend(map(list, itertools.permutations(range(n))))
+                continue
+
+            if self.min_length <= n <= self.max_length:
+                a = [i for i in range(n)]
+                for v in range(self._NUM_ELEMENT_BOUNDARY):
+                    ret.append(a)
+                    x, y = sorted(random.sample(range(n), 2))
+                    a[x], a[y] = a[y], a[x]
+
+                a = [i for i in reversed(range(n))]
+                for v in range(self._NUM_ELEMENT_BOUNDARY):
+                    ret.append(a)
+                    x, y = sorted(random.sample(range(n), 2))
+                    a[x], a[y] = a[y], a[x]
+
+        for i in range(self._NUM_RANDOM):
+            n = self.random_length(self.min_length, self.max_length)
+            a = [i for i in range(n)]
+            random.shuffle(a)
+            ret.append(a)
+
+        return sorted(filter(self.is_valid, ret))

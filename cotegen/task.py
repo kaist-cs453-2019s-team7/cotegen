@@ -73,27 +73,54 @@ class Task:
         
         return test_suite, mutations
 
-
-
     def convert_input_to_string(test: dict) -> str:
         raise NotImplementedError
 
     def convert_output_to_string(output) -> str:
         return str(output)
 
-    # @classmethod
-    # def generate_test_files(cls, target_directory=None):
-    #     # TODO: show progressbar?
-    #     if target_directory is None:
-    #         target_directory = os.getcwd()
-    #     if any(os.scandir(target_directory)):
-    #         raise FileExistsError("target_directory not empty")
+    @classmethod
+    def generate_test_files(cls, target_directory=None):
+        # TODO: show progressbar?
+        if target_directory is None:
+            target_directory = os.getcwd()
+        target_directory = os.path.join(target_directory, "data")
+        try:
+            os.mkdir(target_directory)
+        except FileExistsError:
+            pass
 
-    #     tests = cls.generate_random_tests()
-    #     for idx, test in enumerate(tests):
-    #         with open(os.path.join(target_directory, "%03d.in" % idx), "w") as f:
-    #             f.write(cls.convert_input_to_string(**test))
-    #         with open(os.path.join(target_directory, "%03d.ans" % idx), "w") as f:
-    #             f.write(cls.convert_output_to_string(cls.solve(**test)))
+        test_suite = cls.generate_random_tests()
+        tests = test_suite.tests[:]
+        mutations = cls.mutate(test_suite)
+        for survivor in list(filter(lambda m: m.status ==
+                                              Status.SURVIVED, mutations)):
+            mutantKiller = MutantKiller(cls, survivor, test_suite)
 
-    #     print("Generated %d tests" % len(tests))
+            inputs = mutantKiller.generate_sbst_inputs()
+
+            inputs.extend(mutantKiller.generate_mutation_sbst_inputs())
+            test_suite.add(mutantKiller.generate_new_test_suite(inputs))
+
+        killing_indices = set()
+        mutants_killed = []
+        mutants_survived = []
+        for mutant in mutations:
+            test_result, _, indices = test_suite.run(mutant.ast_node)
+            if test_result == 'SUCCESS':
+                mutants_survived.append(mutant)
+            elif test_result == 'FAIL':
+                killing_indices = killing_indices | set(indices[:3])
+                mutants_killed.append(mutant)
+
+        tests.extend(test_suite.tests[i] for i in killing_indices)
+
+        for idx, test in enumerate(tests):
+            with open(os.path.join(target_directory, "%03d.in" % idx), "w") as f:
+                f.write(cls.convert_input_to_string(**test[0]))
+            with open(os.path.join(target_directory, "%03d.ans" % idx), "w") as f:
+                f.write(cls.convert_output_to_string(test[1]))
+
+        print("Generated %d tests" % len(tests))
+        print('Killed: {}, Survived: {}'.format(
+            len(mutants_killed), len(mutants_survived)))

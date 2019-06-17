@@ -44,16 +44,19 @@ class TestSuite():
 
         result = 'SUCCESS'  # TODO: use Enum
         killed_by = []
-        for input, jury_answer in self.tests:
+        killed_idx = []
+        for idx, pair in enumerate(self.tests):
+            input, jury_answer = pair
             output = self.solve_call(input)
 
             if self.compare(output, jury_answer) == False:
                 killed_by.append((input, jury_answer))
+                killed_idx.append(idx)
                 if result == 'SUCCESS':
                     result = 'FAIL'
 
         self.failed_tests.extend(killed_by)
-        return result, killed_by
+        return result, killed_by, killed_idx
 
     def add(self, test_suite):
         self.tests.extend(test_suite.tests)
