@@ -1,6 +1,6 @@
 import os
 
-from .random import RandomGenerator
+from .my_random import RandomGenerator
 from .mutation import MutationGenerator
 from .context import Status
 from .kill import MutantKiller

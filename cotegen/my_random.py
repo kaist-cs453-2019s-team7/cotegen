@@ -1,4 +1,5 @@
 import random
+from .exceptions import CotegenTaskConstraintError
 
 
 class RandomGenerator():
