@@ -64,7 +64,10 @@ def mutate_operation(operation):
 
 
 def mutate_number(number):
-    mutants = [ast_utils.increment(number), ast_utils.decrement(number), ast_utils.minus(number)]
+    mutants = [ast_utils.increment(number), ast_utils.decrement(number)]
+
+    if number.n != 0:
+        mutants.append(ast_utils.minus(number))
 
     return mutants
 
