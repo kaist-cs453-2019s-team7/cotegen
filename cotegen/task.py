@@ -1,7 +1,8 @@
 import os
 
 from .random import RandomGenerator
-from .run import MutationGenerator, MutantKiller
+from .mutation import MutationGenerator
+from .kill import MutantKiller
 from .test import TestSuite
 from .exceptions import CotegenTaskConstraintError
 

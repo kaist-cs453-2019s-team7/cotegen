@@ -1,7 +1,7 @@
 import context
 from cotegen.task import Task
 from cotegen.context import Status
-from cotegen.run import MutantKiller
+from cotegen.kill import MutantKiller
 
 import importlib.machinery
 

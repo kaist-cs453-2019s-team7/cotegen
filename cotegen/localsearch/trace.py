@@ -394,7 +394,7 @@ class Trace():
 
         return result
 
-    def mutated_or(self, id, lhs, rhs):
+    def mutated_bool_or(self, id, lhs, rhs):
         result = lhs[0] or rhs[0]
 
         distance_to_alternative = 0
@@ -421,7 +421,7 @@ class Trace():
 
         return result
 
-    def mutated_and(self, id, lhs, rhs):
+    def mutated_bool_and(self, id, lhs, rhs):
         result = lhs[0] and rhs[0]
 
         distance_to_alternative = 0
@@ -447,3 +447,77 @@ class Trace():
             return result, distance_to_alternative, distance_true, distance_false
 
         return result
+
+
+def inject_trace_hook(compare_node, branch_id, mutation=False):
+        op = ''
+        lhs = ''
+        rhs = ''
+        f_call = ''
+
+        if isinstance(compare_node, ast.Call) and compare_node.func.value.id == 'trace':
+            return compare_node
+
+        if isinstance(compare_node, ast.BoolOp):
+            lhs = astor.to_source(compare_node.values[0]).rstrip()
+            rhs = astor.to_source(compare_node.values[1]).rstrip()
+            # TODO: handle <3 values in boolop?
+
+            if isinstance(compare_node.op, ast.And):
+                op = 'bool_and'
+            elif isinstance(compare_node.op, ast.Or):
+                op = 'bool_or'
+
+            if mutation:
+                op = 'mutated_' + op
+
+            f_call = 'trace.{fname}({branch_id}, {lhs}, {rhs})'.format(
+                fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)
+
+            f_call_node = ast.parse(f_call, '', 'eval').body
+
+            f_call_node.args[1] = inject_trace_hook(
+                f_call_node.args[1], None)
+            f_call_node.args[2] = inject_trace_hook(
+                f_call_node.args[2], None)
+
+            return f_call_node
+
+        elif not hasattr(compare_node, 'left') or not hasattr(compare_node, 'comparators'):
+            op = 'is_true'
+            arg = astor.to_source(compare_node).rstrip()
+
+            if mutation:
+                op = 'mutated_' + op
+
+            f_call = 'trace.{fname}({branch_id}, {arg})'.format(
+                fname=op, branch_id=branch_id, arg=arg)
+
+        else:
+            lhs = astor.to_source(compare_node.left).rstrip()
+            rhs = astor.to_source(compare_node.comparators[0]).rstrip()
+
+            if isinstance(compare_node.ops[0], ast.Gt):
+                op = 'greater_than'
+            elif isinstance(compare_node.ops[0], ast.GtE):
+                op = 'greater_than_or_equals'
+            elif isinstance(compare_node.ops[0], ast.Lt):
+                op = 'less_than'
+            elif isinstance(compare_node.ops[0], ast.LtE):
+                op = 'less_than_or_equals'
+            elif isinstance(compare_node.ops[0], ast.Eq):
+                op = 'equals'
+            elif isinstance(compare_node.ops[0], ast.NotEq):
+                op = 'not_equals'
+            else:
+                return compare_node
+
+            if mutation:
+                op = 'mutated_' + op
+
+            f_call = 'trace.{fname}({branch_id}, {lhs}, {rhs})'.format(
+                fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)
+
+        f_call_node = ast.parse(f_call, '', 'eval').body
+
+        return f_call_node

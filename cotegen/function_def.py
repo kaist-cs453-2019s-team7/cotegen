@@ -6,6 +6,7 @@ import astor
 import cotegen.ast_utils as ast_utils
 
 from .branch_tree import BranchTree, BranchNode
+from .localsearch.trace import inject_trace_hook
 
 
 class FunctionDef():
@@ -38,20 +39,6 @@ class FunctionDef():
     
     def print(self):
         ast_utils.print_ast(self.node)
-
-
-class NotInterceptableException(Exception):
-    """Exception raised for errors when not able to inject trace
-
-    Attributes:
-        predicate -- predicate in not expected form
-        message -- explanation of the error
-    """
-
-    def __init__(self, predicate, message):
-        self.predicate = predicate
-        self.message = message
-
 
 class WalkPredicates(ast_utils.TreeWalk):
     def __init__(self):
@@ -143,8 +130,7 @@ class WalkPredicates(ast_utils.TreeWalk):
             elif isinstance(compare_node.ops[0], ast.NotEq):
                 op = 'not_equals'
             else:
-                raise NotInterceptableException(list(astor.iter_node(compare_node)),
-                                                'Unexpected form of predicate in target function. All predicate in the target function should only involve relational operators.')
+                return compare_node
 
             f_call = 'trace.{fname}({branch_id}, {lhs}, {rhs})'.format(
                 fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)
@@ -172,13 +158,8 @@ class WalkPredicates(ast_utils.TreeWalk):
     def _pre_Conditional_statement(self):
         self.cur_branch_num += 1
 
-        try:
-            self.cur_node.test = self._inject_trace_hook(
-                self.cur_node.test, self.cur_branch_num)
-
-        except NotInterceptableException as err:
-            print('{}: {}'.format(err.message, err.predicate))
-            exit(1)
+        self.cur_node.test = inject_trace_hook(
+            self.cur_node.test, self.cur_branch_num)
 
         self._create_branch_tree()
 
