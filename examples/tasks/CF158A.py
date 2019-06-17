@@ -4,7 +4,6 @@ import cotegen
 
 from typing import List
 
-
 class CF158A(cotegen.Task):
     input_parameters = \
         {
