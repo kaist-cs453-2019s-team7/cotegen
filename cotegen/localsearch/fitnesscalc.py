@@ -73,7 +73,7 @@ class MutationFitnessCalculator(FitnessCalculator):
 
         reach_dis = 2 * approach_level + normalize(branch_distance)
 
-        mutation_dis = normalize(mutation_distance) * 2
+        mutation_dis = normalize(mutation_distance) + normalize(pmd)
 
         impact_dis = approach_level + normalize(branch_distance)
 

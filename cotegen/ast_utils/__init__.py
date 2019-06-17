@@ -37,12 +37,8 @@ def increment(number):
 def decrement(number):
     return ast.copy_location(ast.Num(number.n - 1), number)
 
-
-def is_division_operation(node):
-    if isinstance(node.op, ast.Div) or isinstance(node.op, ast.FloorDiv) or isinstance(node.op, ast.Mod):
-        return True
-
-    return False
+def abs(number):
+    pass
 
 
 def to_string(op):
