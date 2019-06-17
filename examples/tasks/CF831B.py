@@ -43,5 +43,4 @@ class CF831B(cotegen.Task):
 
 
 if __name__ == '__main__':
-    import os
-    CF831B.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF831B"))
+    CF831B.generate_test_files("~/Downloads/CS453/CF831B")

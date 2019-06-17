@@ -34,6 +34,5 @@ class CF262A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    import os
-    CF262A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF262A"))
+    CF262A.generate_test_files("~/Downloads/CS453/CF262A")
 

@@ -2,6 +2,7 @@ import cotegen
 from typing import List
 import string
 
+
 # http://codeforces.com/problemset/problem/92/A
 
 
@@ -30,5 +31,4 @@ class CF92A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    import os
-    CF92A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF92A"))
+    CF92A.generate_test_files("~/Downloads/CS453/CF92A")

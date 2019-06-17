@@ -39,5 +39,4 @@ class CF841A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    import os
-    CF841A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF841A"))
+    CF841A.generate_test_files("~/Downloads/CS453/CF841A")

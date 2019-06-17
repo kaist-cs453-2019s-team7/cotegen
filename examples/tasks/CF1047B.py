@@ -36,5 +36,4 @@ class CF1047B(cotegen.Task):
 
 
 if __name__ == '__main__':
-    import os
-    CF1047B.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF702A"))
+    CF1047B.generate_test_files("~/Downloads/CS453/CF702A")

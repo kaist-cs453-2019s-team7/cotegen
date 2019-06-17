@@ -37,5 +37,4 @@ class CF854A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    import os
-    CF854A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF854A"))
+    CF854A.generate_test_files("~/Downloads/CS453/CF854A")

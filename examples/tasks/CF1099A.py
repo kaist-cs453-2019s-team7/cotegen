@@ -43,5 +43,4 @@ class CF1099A(cotegen.Task):
 
 
 if __name__ == '__main__':
-    import os
-    CF1099A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF1099A"))
+    CF1099A.generate_test_files("~/Downloads/CS453/CF1099A")
