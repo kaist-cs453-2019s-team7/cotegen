@@ -56,11 +56,7 @@ class MutantKiller():
 
         minimised_args, fitness_value = searcher.minimise()
 
-        if fitness_value == 0:
-            return minimised_args
-
-        else:
-            return None
+        return minimised_args
 
     def generate_mutation_sbst_inputs(self, count=100):
         inputs = []

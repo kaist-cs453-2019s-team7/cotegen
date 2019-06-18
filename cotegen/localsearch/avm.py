@@ -64,7 +64,7 @@ class AVM():
 
         elif isinstance(arg_value, list):
             new_arg_value = arg_value[:]
-            arg_id = self.input_parameters.keys()[index]
+            arg_id = list(self.input_parameters.keys())[index]
             direction = self.list_args_direction[arg_id]
 
             for index in direction:
