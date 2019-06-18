@@ -148,7 +148,7 @@ class Task:
             if test_result == 'SUCCESS':
                 mutants_survived.append(mutant)
             elif test_result == 'FAIL':
-                killing_indices = killing_indices | set(indices[:3])
+                killing_indices = killing_indices | set(indices[:5])
                 mutants_killed.append(mutant)
 
             test_sbst_result, _, indices_sbst = test_suite_with_only_pure_sbst.run(
