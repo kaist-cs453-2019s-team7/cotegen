@@ -65,5 +65,8 @@ class RandomGenerator():
                                 for k, k_tests in variable_tests.items()})
 
                 tests = nxt_tests
+                if len(tests) > 50:
+                    random.shuffle(tests)
+                    tests = tests[:50]
 
         return tests
