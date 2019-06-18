@@ -58,7 +58,7 @@ class TestSuite():
                 if result == 'SUCCESS':
                     result = 'FAIL'
 
-            if len(killed_by) > 3:
+            if len(killed_by) > 5:
                 break
 
         self.failed_tests.extend(killed_by)
