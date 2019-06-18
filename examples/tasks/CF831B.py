@@ -4,13 +4,14 @@ import string
 
 # http://codeforces.com/problemset/problem/831/B
 
+_ALL_LETTERS = string.ascii_lowercase + string.ascii_uppercase + string.digits
 
 class CF831B(cotegen.Task):
     input_parameters = \
         {
             'a': cotegen.types.IntegerPermutation(26, 26),
             'b': cotegen.types.IntegerPermutation(26, 26),
-            's': cotegen.types.IntegerSequence(1, 1000, 0, 51),
+            's': cotegen.types.IntegerSequence(1, 1000, 0, 61),
         }
 
     output_type = List[int]
@@ -18,9 +19,9 @@ class CF831B(cotegen.Task):
     def solve(a: List[int], b: List[int], s: List[int]) -> List[int]:
         ret = []
         for x in s:
-            y = -1
+            y = x
             for i in range(26):
-                if a[i] == x % 26:
+                if x < 52 and a[i] == x % 26:
                     y = b[i]
                     if x >= 26:
                         y += 26
@@ -35,11 +36,11 @@ class CF831B(cotegen.Task):
         lines = []
         lines.append("".join(string.ascii_lowercase[x] for x in a))
         lines.append("".join(string.ascii_lowercase[y] for y in b))
-        lines.append("".join(string.ascii_letters[z] for z in s))
+        lines.append("".join(_ALL_LETTERS[z] for z in s))
         return "\n".join(lines) + "\n"
 
     def convert_output_to_string(output):
-        return "".join(string.ascii_letters[x] for x in output)
+        return "".join(_ALL_LETTERS[x] for x in output)
 
 
 if __name__ == '__main__':

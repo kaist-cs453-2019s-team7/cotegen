@@ -12,12 +12,10 @@ class CF977A(cotegen.Task):
     output_type = int
 
     constraints = [
-        cotegen.constraints.CustomConstraint(lambda test: CF977A.solve(**test) > 0)
+        cotegen.constraints.CustomConstraint(lambda test: 'n' not in test or 'k' not in test or CF977A.solve(**test) > 0)
     ]
 
     def solve(n: int, k: int) -> int:
-        # 2 <= n <= 10**9, 1 <= k <= 50
-        # answer > 0 (hard-to-satisfy condition)
         ans = n
         for _ in range(k):
             if ans % 10 == 0:
@@ -26,14 +24,14 @@ class CF977A(cotegen.Task):
                 ans -= 1
         return ans
 
-
+    @staticmethod
     def compare(user_answer: int, jury_answer: int) -> bool:
         return user_answer == jury_answer
 
+    def convert_input_to_string(n: int, k: int) -> str:
+        return "%d %d\n" % (n, k)
 
 
 if __name__ == '__main__':
-    tests = CF977A.generate_random_tests()
-    print(len(tests))
-    for test in tests:
-        print(test)
+    import os
+    CF977A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF977A"))

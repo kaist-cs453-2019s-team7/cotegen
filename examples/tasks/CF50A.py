@@ -21,9 +21,10 @@ class CF50A(cotegen.Task):
     def compare(user_answer: int, jury_answer: int) -> bool:
         return user_answer == jury_answer
 
+    @staticmethod
+    def convert_input_to_string(N: int, M: int):
+        return "%d %d\n" % (N, M)
 
 if __name__ == '__main__':
-    tests = CF50A.generate_random_tests()
-    print(len(tests))
-    for test in tests:
-        print(test)
+    import os
+    CF50A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF50A"))

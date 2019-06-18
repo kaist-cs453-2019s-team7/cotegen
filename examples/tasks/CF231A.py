@@ -24,12 +24,18 @@ class CF231A(cotegen.Task):
                 ret += 1
         return ret
 
+    @staticmethod
     def compare(user_answer: int, jury_answer: int) -> bool:
         return user_answer == jury_answer
 
+    @staticmethod
+    def convert_input_to_string(n: int, a: List[int], b: List[int], c: List[int]):
+        lines = ["%d\n" % n]
+        for i in range(n):
+            lines.append("%d %d %d\n" % (a[i], b[i], c[i]))
+        return "\n".join(lines)
+
 
 if __name__ == '__main__':
-    tests = CF231A.generate_random_tests()
-    print(len(tests))
-    for test in tests:
-        print(test)
+    import os
+    CF231A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF231A"))

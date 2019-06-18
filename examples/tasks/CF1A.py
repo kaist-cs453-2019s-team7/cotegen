@@ -16,9 +16,15 @@ class CF1A(cotegen.Task):
         # 1 <= n, m, a <= 10**9
         return ((n + (a-1)) // a) * ((m + (a-1)) // a)
 
+    @staticmethod
     def compare(user_answer: int, jury_answer: int) -> bool:
         return user_answer == jury_answer
 
+    @staticmethod
+    def convert_input_to_string(n: int, m: int, a: int):
+        return "%d %d %d\n" % (n, m, a)
+
 
 if __name__ == '__main__':
-    print(CF1A.generate_random_tests())
+    import os
+    CF1A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF1A"))

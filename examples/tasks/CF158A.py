@@ -4,6 +4,7 @@ import cotegen
 
 from typing import List
 
+
 class CF158A(cotegen.Task):
     input_parameters = \
         {
@@ -25,13 +26,14 @@ class CF158A(cotegen.Task):
                 ret += 1
         return ret
 
-
     def compare(user_answer: int, jury_answer: int) -> bool:
         return user_answer == jury_answer
 
+    @staticmethod
+    def convert_input_to_string(k: int, a: List[int]):
+        return "%d %d\n" % (len(a), k) + " ".join(map(str, a)) + "\n"
+
 
 if __name__ == '__main__':
-    tests = CF158A.generate_random_tests()
-    print(len(tests))
-    for test in tests:
-        print(test)
+    import os
+    CF158A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF158A"))

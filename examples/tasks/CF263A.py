@@ -10,6 +10,7 @@ class CF263A(cotegen.Task):
         'x': cotegen.types.Integer(0, 24),
     }
 
+    @staticmethod
     def convert_input_parameters_to_test(test) -> dict:
         ret = [[0] * 5 for _ in range(5)]
         ret[test['x'] // 5][test['x'] % 5] = 1
@@ -23,12 +24,19 @@ class CF263A(cotegen.Task):
                 if a[i][j] == 1:
                     return abs(i - 2) + abs(j - 2)
 
+    @staticmethod
     def compare(user_answer: int, jury_answer: int) -> bool:
         return user_answer == jury_answer
 
+    @staticmethod
+    def convert_input_to_string(a: List[List[int]]):
+        ret = []
+        for row in a:
+            ret.append(" ".join(map(str, row)) + "\n")
+        return "".join(ret)
+
+
 
 if __name__ == '__main__':
-    tests = CF263A.generate_random_tests()
-    print(len(tests))
-    for test in tests:
-        print(test)
+    import os
+    CF263A.generate_test_files(os.path.expanduser("~/Downloads/CS453/CF263A"))
