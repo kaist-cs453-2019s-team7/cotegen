@@ -11,12 +11,17 @@ class AVM():
 
         self.input_parameters = input_parameters
         self.constraints = constraints
+        self.list_args_direction = {}
 
     def _generate_random_arguments(self):
         args = {}
         for id, value in self.input_parameters.items():
             argument_value = value.get_random()
             args[id] = argument_value
+
+            if isinstance(argument_value, list):
+                num_indices = random.randint(1, len(argument_value))
+                self.list_args_direction[id] = random.sample(range(len(argument_value)), num_indices)
 
         return args
 
@@ -53,19 +58,19 @@ class AVM():
     def values_to_args(self, args):
         return dict(zip(self.input_parameters.keys(), args))
 
-    def increment(self, arg_value, k):
+    def move(self, arg_value, k, index):
         if isinstance(arg_value, int):
             return arg_value + k
 
         elif isinstance(arg_value, list):
-            return list(map(lambda x: x + k, arg_value))
+            new_arg_value = arg_value[:]
+            arg_id = self.input_parameters.keys()[index]
+            direction = self.list_args_direction[arg_id]
 
-    def decrement(self, arg_value, k):
-        if isinstance(arg_value, int):
-            return arg_value - k
+            for index in direction:
+                new_arg_value[index] += k
 
-        elif isinstance(arg_value, list):
-            return list(map(lambda x: x - k, arg_value))
+            return new_arg_value
 
     def search_on_one_argument(self, args, index):
         fitness = self.fitness.calculate(args)
@@ -77,8 +82,8 @@ class AVM():
             return args, 10000
 
         while fitness > 0:
-            fitness_left = self.calculate_fitness(args_values, index, self.decrement(x, 1))
-            fitness_right = self.calculate_fitness(args_values, index, self.increment(x, 1))
+            fitness_left = self.calculate_fitness(args_values, index, self.move(x, -1, index))
+            fitness_right = self.calculate_fitness(args_values, index, self.move(x, 1, index))
 
             if fitness <= fitness_left and fitness <= fitness_right:
                 args_values[index] = x
@@ -86,8 +91,8 @@ class AVM():
 
             k = -1 if fitness_left < fitness_right else 1
 
-            while self.calculate_fitness(args_values, index, self.increment(x, k)) < fitness:
-                x = self.increment(x, k)
+            while self.calculate_fitness(args_values, index, self.move(x, k, index)) < fitness:
+                x = self.move(x, k, index)
                 k = k * 2
 
                 if self.violates_constraints(args_values, x, index):

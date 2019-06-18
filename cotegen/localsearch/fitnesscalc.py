@@ -26,13 +26,8 @@ class FitnessCalculator():
         branch_tree = target_function.branch_tree
         self.nodes_on_path = branch_tree.get_nodes_on_path(target_branch)
 
-    def get_variables(self, args):
-        if self.is_always_reachable:
-            return (0, 0, 0, 0)
-
+    def get_executed_branches(self, args):
         trace = Trace()
-
-        exec(self.exec, locals(), globals())
 
         try:
             trace_args = copy.deepcopy(args)
@@ -40,13 +35,19 @@ class FitnessCalculator():
             self.target_function.func(**trace_args)
         except (AssertionError, ZeroDivisionError):
             # TODO: ZeroDivisionError is just to avoid the program to be terminated for BOJ2839
-            return (10000, 0, 0, 0)
+            return []
 
-        executed_branches = trace.get_executed_branches()
+        return trace.get_executed_branches()
 
-        for num, result, _, _, _ in executed_branches:
+    def get_variables(self, args):
+        if self.is_always_reachable:
+            return (0, 0, 0, 0)
+
+        executed_branches = self.get_executed_branches(args)
+
+        for num, result, _, mutation_distance, pmd in executed_branches:
             if (num, result) == self.target_branch:
-                return (0, 0, 0, 0)
+                return (0, 0, mutation_distance, pmd)
 
         approach_level = 0
         for branch_num, branch_type in self.nodes_on_path:
