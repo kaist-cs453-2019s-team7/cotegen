@@ -6,14 +6,14 @@ from ..context import Context
 
 from ..localsearch.trace import inject_trace_hook
 
-from .operators import compare_mutation, and_or_mutation, operator_mutation, keyword_mutation
+from .operators import compare_mutation, and_or_mutation, operator_mutation
 import cotegen.ast_utils as ast_utils
 
 
 def _mutate_by_op(original, op, set_target_attribute, mutation_op):
     mutants = []
-    for key, new_op in mutation_op.items():
-        if ast_utils.to_string(op) == key:
+    for to_mutate, new_op in mutation_op:
+        if ast_utils.to_string(op) == to_mutate:
             mutant = copy.deepcopy(original)
             set_target_attribute(mutant, ast_utils.to_ast_node(new_op))
 
@@ -153,7 +153,7 @@ class Mutator(ast_utils.TreeWalk):
         for mutant in mutants:
             if self.is_predicate_test():
                 mutant = inject_trace_hook(
-                    mutant, self.cur_branch_num, mutation=True)
+                    mutant, self.cur_branch_num, mutation=True, original=original)
 
             self.replace(mutant)
             mutation = Context(copy.deepcopy(self.target))

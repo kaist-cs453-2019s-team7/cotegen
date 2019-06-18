@@ -1,5 +1,6 @@
 import cotegen.localsearch.distance_functions as df
 import cotegen.localsearch.mutation_distance_functions as mdf
+import cotegen.ast_utils as ast_utils
 
 import ast
 import astor
@@ -251,7 +252,19 @@ class Trace():
     Mutation Fitness
     '''
 
-    def mutated_equals(self, id, lhs, rhs):
+    def gt_mutated_equals(self, id, lhs, rhs):
+        return self.mutated_equals(id, lhs, rhs, mdf.Gt_to_Eq)
+    
+    def gte_mutated_equals(self, id, lhs, rhs):
+        return self.mutated_equals(id, lhs, rhs, mdf.GtE_to_Eq)
+    
+    def lt_mutated_equals(self, id, lhs, rhs):
+        return self.mutated_equals(id, lhs, rhs, mdf.Lt_to_Eq)
+    
+    def lte_mutated_equals(self, id, lhs, rhs):
+        return self.mutated_equals(id, lhs, rhs, mdf.Lt_to_Eq)
+
+    def mutated_equals(self, id, lhs, rhs, mutation_df):
         result = lhs == rhs
 
         distance_to_alternative = 0
@@ -269,7 +282,7 @@ class Trace():
         if id == None:
             return result, distance_to_alternative, distance_true, distance_false
 
-        mutation_distance = mdf.NEq_to_Eq(lhs, rhs)
+        mutation_distance = mutation_df(lhs, rhs)
 
         original_distance_true, original_distance_false = self.not_equals(None, lhs, rhs)[
             2:]
@@ -282,7 +295,19 @@ class Trace():
 
         return result
 
-    def mutated_not_equals(self, id, lhs, rhs):
+    def lt_mutated_not_equals(self, id, lhs, rhs):
+        return self.mutated_not_equals(id, lhs, rhs, mdf.Lt_to_NEq)
+
+    def gt_mutated_not_equals(self, id, lhs, rhs):
+        return self.mutated_not_equals(id, lhs, rhs, mdf.Gt_to_NEq)
+
+    def lte_mutated_not_equals(self, id, lhs, rhs):
+        return self.mutated_not_equals(id, lhs, rhs, mdf.LtE_to_NEq)
+
+    def gte_mutated_not_equals(self, id, lhs, rhs):
+        return self.mutated_not_equals(id, lhs, rhs, mdf.GtE_to_NEq)
+
+    def mutated_not_equals(self, id, lhs, rhs, mutation_df):
         result = lhs != rhs
 
         distance_to_alternative = 0
@@ -300,7 +325,7 @@ class Trace():
         if id == None:
             return result, distance_to_alternative, distance_true, distance_false
 
-        mutation_distance = mdf.Eq_to_NEq(lhs, rhs)
+        mutation_distance = mutation_df(lhs, rhs)
 
         original_distance_true, original_distance_false = self.equals(None, lhs, rhs)[
             2:]
@@ -313,7 +338,16 @@ class Trace():
 
         return result
 
-    def mutated_less_than(self, id, lhs, rhs):
+    def lte_mutated_less_than(self, id, lhs, rhs):
+        return self.mutated_less_than(id, lhs, rhs, mdf.LtE_to_Lt)
+
+    def eq_mutated_less_than(self, id, lhs, rhs):
+        return self.mutated_less_than(id, lhs, rhs, mdf.Eq_to_Lt)
+
+    def noteq_mutated_less_than(self, id, lhs, rhs):
+        return self.mutated_less_than(id, lhs, rhs, mdf.NEq_to_Lt)
+
+    def mutated_less_than(self, id, lhs, rhs, mutation_df):
         result = lhs < rhs
 
         distance_to_alternative = 0
@@ -331,7 +365,7 @@ class Trace():
         if id == None:
             return result, distance_to_alternative, distance_true, distance_false
 
-        mutation_distance = mdf.LtE_to_Lt(lhs, rhs)
+        mutation_distance = mutation_df(lhs, rhs)
 
         original_distance_true, original_distance_false = self.less_than_or_equals(None, lhs, rhs)[
             2:]
@@ -343,7 +377,16 @@ class Trace():
             (id, result, distance_to_alternative, mutation_distance, pmd))
         return result
 
-    def mutated_less_than_or_equals(self, id, lhs, rhs):
+    def lt_mutated_less_than_or_equals(self, id, lhs, rhs):
+        return self.mutated_less_than_or_equals(id, lhs, rhs, mdf.Lt_to_LtE)
+
+    def eq_mutated_less_than_or_equals(self, id, lhs, rhs):
+        return self.mutated_less_than_or_equals(id, lhs, rhs, mdf.Eq_to_LtE)
+
+    def noteq_mutated_less_than_or_equals(self, id, lhs, rhs):
+        return self.mutated_less_than_or_equals(id, lhs, rhs, mdf.NEq_to_LtE)
+
+    def mutated_less_than_or_equals(self, id, lhs, rhs, mutation_df):
         result = lhs <= rhs
 
         distance_to_alternative = 0
@@ -362,7 +405,7 @@ class Trace():
         if id == None:
             return result, distance_to_alternative, distance_true, distance_false
 
-        mutation_distance = mdf.Lt_to_LtE(lhs, rhs)
+        mutation_distance = mutation_df(lhs, rhs)
 
         original_distance_true, original_distance_false = self.less_than(None, lhs, rhs)[
             2:]
@@ -375,7 +418,16 @@ class Trace():
 
         return result
 
-    def mutated_greater_than(self, id, lhs, rhs):
+    def gte_mutated_greater_than(self, id, lhs, rhs):
+        return self.mutated_greater_than(id, lhs, rhs, mdf.GtE_to_Gt)
+
+    def eq_mutated_greater_than(self, id, lhs, rhs):
+        return self.mutated_greater_than(id, lhs, rhs, mdf.Eq_to_Gt)
+
+    def noteq_mutated_greater_than(self, id, lhs, rhs):
+        return self.mutated_greater_than(id, lhs, rhs, mdf.NEq_to_Gt)
+
+    def mutated_greater_than(self, id, lhs, rhs, mutation_df):
         result = lhs > rhs
 
         distance_to_alternative = 0
@@ -393,7 +445,7 @@ class Trace():
         if id == None:
             return result, distance_to_alternative, distance_true, distance_false
 
-        mutation_distance = mdf.GtE_to_Gt(lhs, rhs)
+        mutation_distance = mutation_df(lhs, rhs)
 
         original_distance_true, original_distance_false = self.greater_than_or_equals(None, lhs, rhs)[
             2:]
@@ -406,7 +458,16 @@ class Trace():
 
         return result
 
-    def mutated_greater_than_or_equals(self, id, lhs, rhs):
+    def gt_mutated_greater_than_or_equals(self, id, lhs, rhs):
+        return self.mutated_greater_than_or_equals(id, lhs, rhs, mdf.Gt_to_GtE)
+
+    def eq_mutated_greater_than_or_equals(self, id, lhs, rhs):
+        return self.mutated_greater_than_or_equals(id, lhs, rhs, mdf.Eq_to_GtE)
+
+    def noteq_mutated_greater_than_or_equals(self, id, lhs, rhs):
+        return self.mutated_greater_than_or_equals(id, lhs, rhs, mdf.NEq_to_GtE)
+
+    def mutated_greater_than_or_equals(self, id, lhs, rhs, mutation_df):
         result = lhs >= rhs
 
         distance_to_alternative = 0
@@ -424,7 +485,7 @@ class Trace():
         if id == None:
             return result, distance_to_alternative, distance_true, distance_false
 
-        mutation_distance = mdf.Gt_to_GtE(lhs, rhs)
+        mutation_distance = mutation_df(lhs, rhs)
 
         original_distance_true, original_distance_false = self.greater_than(None, lhs, rhs)[
             2:]
@@ -506,7 +567,7 @@ class Trace():
         return result
 
 
-def inject_trace_hook(compare_node, branch_id, mutation=False):
+def inject_trace_hook(compare_node, branch_id, mutation=False, original=None):
     op = ''
     lhs = ''
     rhs = ''
@@ -570,7 +631,9 @@ def inject_trace_hook(compare_node, branch_id, mutation=False):
             return compare_node
 
         if mutation:
-            op = 'mutated_' + op
+            original_op = ast_utils.to_op_name(original.ops[0])
+            op = original_op + '_mutated_' + op
+
 
         f_call = 'trace.{fname}({branch_id}, {lhs}, {rhs})'.format(
             fname=op, branch_id=branch_id, lhs=lhs, rhs=rhs)

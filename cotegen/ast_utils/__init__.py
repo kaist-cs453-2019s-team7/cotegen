@@ -31,6 +31,17 @@ ast_string = {
     ast.BitXor: '^',
 }
 
+ast_op_name = {
+    ast.Gt: 'gt',
+    ast.GtE: 'gte',
+    ast.Lt: 'lt',
+    ast.LtE: 'lte',
+    ast.NotEq: 'noteq',
+    ast.Eq: 'eq',
+    ast.And: 'and',
+    ast.Or: 'or',
+}
+
 
 def increment(number):
     return ast.copy_location(ast.Num(number.n + 1), number)
@@ -48,6 +59,12 @@ def to_string(op):
     for ast_node, string in ast_string.items():
         if isinstance(op, ast_node):
             return string
+
+
+def to_op_name(op):
+    for ast_node, op_name in ast_op_name.items():
+        if isinstance(op, ast_node):
+            return op_name
 
 
 def to_ast_node(op_string):
