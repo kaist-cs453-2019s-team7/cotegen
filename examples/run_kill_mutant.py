@@ -11,8 +11,11 @@ import importlib.machinery
 
 
 if __name__ == "__main__":
-    filename = 'BOJ2839'
-    task = importlib.machinery.SourceFileLoader('','examples/references/integers/{}.py'.format(filename)).load_module().__dict__[filename]
+    filename = '4A'
+    task = importlib.machinery.SourceFileLoader('','examples/references/integers/{}.py'.format(filename)).load_module().__dict__['CF'+filename]
+
+    task = importlib.machinery.SourceFileLoader('',
+                                                'examples/references/integers/BOJ2839.py').load_module().BOJ2839
 
     initial_test_suite = task.generate_random_tests()
     mutations = task.mutate(initial_test_suite)
@@ -31,10 +34,10 @@ if __name__ == "__main__":
         mutation_inputs = mutantKiller.generate_mutation_sbst_inputs()
 
         sbst_test_suite = mutantKiller.generate_new_test_suite(sbst_inputs)
-        test_result, _ = sbst_test_suite.run(survivor.ast_node)
+        test_result, _, _ = sbst_test_suite.run(survivor.ast_node)
         
         mutation_test_suite = mutantKiller.generate_new_test_suite(mutation_inputs)
-        test_result_mut, _ = mutation_test_suite.run(survivor.ast_node)
+        test_result_mut, _, _ = mutation_test_suite.run(survivor.ast_node)
 
         
         def change(result):
