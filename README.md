@@ -89,3 +89,13 @@ python -m cotegen run mutation --filename <filename> --show-survived <true or fa
 
 python -m cotegen run kill --filename <filename> --save <directory path> --mutation-fitness <true or false>
 ```
+
+For example:
+
+```
+python -m cotegen run random --filename CF158A
+
+python -m cotegen run mutation --filename CF158A
+
+python -m cotegen run kill --filename CF158A --save ~/Downloads --mutation-fitness true
+```
