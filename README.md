@@ -2,6 +2,10 @@
 
 CoTeGen automatically generates test suite of a typical coding test problem from the bottom. First, an initial test suite can be constructed with minimal cost. Next, search-based input generation with mutation fitness complement the initial test suite. Using mutated reference solution as a simplified form of wrong answers, we aim to kill as many mutants as possible. Hence, mutation coverage is provided as a complementary result.
 
+- PyPI Release: https://pypi.org/project/cotegen/
+
+- Academic Report: [Dropbox](https://www.dropbox.com/s/izvyd5c61xi35k5/CS453_Final_Project_Report__CoTeGen_.pdf?dl=0)
+
 ## Adding New Reference Solution
 
 After installing our `cotegen` package, You can write a new reference solution as a simple python file to generate corresponding test cases.
