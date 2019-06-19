@@ -49,7 +49,7 @@ Predefine the types of input parameters and the range of each argument as a dict
 
 Currently, `CoTeGen` supports following types:
 
-```
+```python
 cotegen.types.Integer
 cotegen.types.IntegerSequence
 cotegen.types.NonIncreasingIntegerSequence
@@ -60,7 +60,7 @@ cotegen.types.IntegerPermutation
 ### Define constraint
 
 If needed, define the constraints among input parameters as list.
-```
+```python
 constraints = [
         cotegen.constraints.Leq('M', 'N')
     ]
@@ -68,7 +68,7 @@ constraints = [
 
 You can utilize these predefined constraints:
 
-```
+```python
 cotegen.constraints.Leq (Less than or equal)
 cotegen.constraints.ListLengthLeqInteger
 cotegen.constraints.ListLengthReqInteger
@@ -76,7 +76,7 @@ cotegen.constraints.ListLengthReqInteger
 
 or, use custom constraints giving custom function (which receives parameter dictionary and returns true/false) as an argument
 
-```
+```python
 cotegen.constraints.CustomConstraint(lambda test: 'd1' not in test or 'd2' not in test or test['d1'] != test['d2'])
 ```
 
