@@ -11,12 +11,12 @@ from os.path import isfile, join
 
 import importlib.machinery
 
-path = 'examples/references/integers/'
+path = 'examples/tasks'
 target_files = [(join(path, f), f[:-3]) for f in listdir(path) if isfile(join(path, f))]
 
 def test_mutate():
     for target_file, file_name in target_files:
-        task = importlib.machinery.SourceFileLoader('', target_file).load_module().__dict__['CF' + file_name if file_name[:3] != 'BOJ' else file_name]
+        task = importlib.machinery.SourceFileLoader('', target_file).load_module().__dict__[file_name]
 
         generator = MutationGenerator(
             task.solve, task.input_parameters)
