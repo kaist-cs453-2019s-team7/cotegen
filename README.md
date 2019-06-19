@@ -2,7 +2,9 @@
 
 ## Adding New Reference Solution
 
-After installing our `cotegen` package, You can write a new reference solution to generate corresponding test cases.
+After installing our `cotegen` package, You can write a new reference solution as a simple python file to generate corresponding test cases.
+
+Please locate your reference solution file in `examples/tasks` directory to utilize command line execution.
 
 You should define a new class inherits `cotegen.Task` and with the same with filename. 
 
@@ -10,7 +12,7 @@ You should define a new class inherits `cotegen.Task` and with the same with fil
 
 Please refer the example:
 
-```
+```python
 import cotegen
 
 # http://codeforces.com/problemset/problem/1/A
@@ -42,7 +44,44 @@ if __name__ == '__main__':
 
 ```
 
-## Usage
+### Define Input Parameters
+Predefine the types of input parameters and the range of each argument as a dictionary format.
+
+Currently, `CoTeGen` supports following types:
+
+```
+cotegen.types.Integer
+cotegen.types.IntegerSequence
+cotegen.types.NonIncreasingIntegerSequence
+cotegen.types.FixedVariableLengthIntegerSequence
+cotegen.types.IntegerPermutation
+```
+
+### Define constraint
+
+If needed, define the constraints among input parameters as list.
+```
+constraints = [
+        cotegen.constraints.Leq('M', 'N')
+    ]
+```
+
+You can utilize these predefined constraints:
+
+```
+cotegen.constraints.Leq (Less than or equal)
+cotegen.constraints.ListLengthLeqInteger
+cotegen.constraints.ListLengthReqInteger
+```
+
+or, use custom constraints giving custom function (which receives parameter dictionary and returns true/false) as an argument
+
+```
+cotegen.constraints.CustomConstraint(lambda test: 'd1' not in test or 'd2' not in test or test['d1'] != test['d2'])
+```
+
+## Command Line Usage
+
 ```
 python -m cotegen run random --filename <filename>
 
