@@ -63,7 +63,7 @@ cotegen.types.FixedVariableLengthIntegerSequence
 cotegen.types.IntegerPermutation
 ```
 
-### Define constraint
+### Define Constraint
 
 If needed, define the constraints among input parameters as list.
 ```python

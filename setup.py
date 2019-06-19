@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='cotegen',
-    version='1.0',
+    version='1.1',
     url='https://github.com/kaist-cs453-2019s-team7/cs453-team-project',
     author='Team7',
     author_email='suchan.park@kaist.ac.kr',
